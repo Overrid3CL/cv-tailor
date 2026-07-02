@@ -23,8 +23,25 @@
   ],
   "main": "template.js",
   "bin": {
-    "cv-tailor": "generate.js"
+    "cv-tailor": "generate.js",
+    "cv-tailor-mcp": "mcp-server.js"
   },
+  "files": [
+    "lib/",
+    "schemas/",
+    "templates/",
+    "examples/",
+    "generate.js",
+    "import.js",
+    "match.js",
+    "lint.js",
+    "validate.js",
+    "template.js",
+    "mcp-server.js",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18"
   },
