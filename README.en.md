@@ -38,35 +38,31 @@ Here instead:
 ## Get started
 
 You need [Node.js](https://nodejs.org) ≥ 18 (npm, pnpm, yarn or [Bun](https://bun.sh)).
+There are three ways to use it, from the simplest to the most manual.
 
-### 1. Get the code
+### 1. Install it as an MCP server — the recommended way (no repo download)
 
-```bash
-git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
-npm install        # or: pnpm install · yarn · bun install
-```
-
-> The PDF format uses Chromium (Puppeteer downloads it on install, ~150 MB); the other
-> formats don't need it. With **pnpm**: `pnpm approve-builds` for Puppeteer's postinstall.
-
-### 2. Connect it to your agent — the recommended way
-
-`cv-tailor` is a standard MCP server (stdio). Add it to your client's config (Claude
+`cv-tailor` is published on npm, so your MCP client launches it with `npx` without you
+cloning or installing anything by hand. Add this block to your client's config (Claude
 Desktop/Code, Cursor, VS Code, Windsurf… any of them):
 
 ```json
 { "mcpServers": { "cv-tailor": {
-  "command": "node", "args": ["/path/to/cv-tailor/mcp-server.js"],
+  "command": "npx", "args": ["-y", "cv-tailor-mcp"],
   "env": { "CV_DIR": "/path/to/your-cv-folder" }
 } } }
 ```
 
-(Claude Code reads the repo's `.mcp.json` automatically when you open it.) The
-intelligence comes from **the agent you already use** — the server never calls an LLM
-and needs no API key, and everything runs on your machine.
+`npx -y cv-tailor-mcp` downloads the server the first time and caches it. Set **`CV_DIR`**
+to your data folder (under `npx` the working directory is unpredictable, so be explicit).
+No data yet? Copy the package's `examples/` folder as a starting point.
 
-Then you work in plain language; your agent uses the server's tools for real (with
-validation and metrics), not just opinion:
+> The PDF format uses Chromium (Puppeteer downloads it the first time, ~150 MB); the other
+> formats don't need it.
+
+The intelligence comes from **the agent you already use** — the server never calls an LLM
+and needs no API key, and everything runs on your machine. Then you work in plain language;
+your agent uses the server's tools for real (with validation and metrics), not just opinion:
 
 | You tell your agent… | What happens |
 |---|---|
@@ -81,10 +77,38 @@ validation and metrics), not just opinion:
 
 Full cycle: **posting → tailored CV → logged application → follow-up → interview**.
 
-### 3. …or use it from the command line (no AI)
+### 2. …or download the code
+
+Useful if you want to modify the tool, contribute, or run it without depending on npm:
 
 ```bash
-# Try it now with the example CV (fictional)
+git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
+npm install        # or: pnpm install · yarn · bun install
+```
+
+> With **pnpm**: `pnpm approve-builds` for Puppeteer's postinstall.
+
+To connect your agent to the local clone, point the MCP config at the file instead of `npx`:
+
+```json
+{ "mcpServers": { "cv-tailor": {
+  "command": "node", "args": ["/path/to/cv-tailor/mcp-server.js"],
+  "env": { "CV_DIR": "/path/to/your-cv-folder" }
+} } }
+```
+
+(Claude Code reads the repo's `.mcp.json` automatically when you open it.)
+
+### 3. …or use it from the command line (no AI)
+
+Installed globally (`npm install -g cv-tailor`) you get the `cv-tailor` command; from the
+clone, use `node generate.js`:
+
+```bash
+# Installed globally: work in your data folder
+cd ~/my-cv && cv-tailor --variant tailored
+
+# From the clone: try it now with the example CV (fictional)
 CV_DIR=examples node generate.js --variant tailored
 
 # Make it yours: copy the example to your private folder and edit it
@@ -252,8 +276,8 @@ cd ~/my-cv && cv-tailor --variant tailored     # data in ~/my-cv
 CV_DIR=~/my-cv cv-tailor --variant tailored    # from anywhere
 ```
 
-For the global binary: `npm link` (or `bun link`) inside the clone — publishing to
-npm/bunx is pending. Running from the repo itself (`node generate.js …`), the data
+For the global binary: `npm install -g cv-tailor` (or `npm link` / `bun link` inside the
+clone). Running from the repo itself (`node generate.js …`), the data
 folder is the repo root.
 
 </details>

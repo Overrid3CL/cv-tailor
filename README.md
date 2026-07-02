@@ -37,35 +37,32 @@ Aquí en cambio:
 ## Empezar
 
 Necesitas [Node.js](https://nodejs.org) ≥ 18 (sirve npm, pnpm, yarn o [Bun](https://bun.sh)).
+Tienes tres formas de usarlo, de la más simple a la más manual.
 
-### 1. Descarga el código
+### 1. Instálalo como servidor MCP — la forma recomendada (sin descargar el repo)
 
-```bash
-git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
-npm install        # o: pnpm install · yarn · bun install
-```
-
-> El formato PDF usa Chromium (Puppeteer lo descarga al instalar, ~150 MB); los demás no
-> lo necesitan. Con **pnpm**: `pnpm approve-builds` para el postinstall de Puppeteer.
-
-### 2. Conéctalo a tu agente — la forma recomendada
-
-`cv-tailor` es un servidor MCP estándar (stdio). Agrégalo en la config de tu cliente
-(Claude Desktop/Code, Cursor, VS Code, Windsurf… cualquiera):
+`cv-tailor` se publica en npm, así que tu cliente MCP lo lanza con `npx` sin que clones ni
+instales nada a mano. Agrega este bloque en la config de tu cliente (Claude Desktop/Code,
+Cursor, VS Code, Windsurf… cualquiera):
 
 ```json
 { "mcpServers": { "cv-tailor": {
-  "command": "node", "args": ["/ruta/a/cv-tailor/mcp-server.js"],
+  "command": "npx", "args": ["-y", "cv-tailor-mcp"],
   "env": { "CV_DIR": "/ruta/a/tu-carpeta-de-cv" }
 } } }
 ```
 
-(Claude Code lee el `.mcp.json` del repo automáticamente al abrirlo.) La inteligencia la
-pone **el agente que ya usas** — el servidor no llama a ningún LLM ni necesita API key, y
-todo corre en tu máquina.
+`npx -y cv-tailor-mcp` descarga el servidor la primera vez y lo cachea. Define **`CV_DIR`**
+apuntando a tu carpeta de datos (bajo `npx` el directorio de trabajo es impredecible, así
+que conviene ser explícito). ¿No tienes datos aún? Copia la carpeta `examples/` del paquete
+como punto de partida.
 
-Luego trabajas en lenguaje natural; tu agente usa las herramientas del servidor de verdad
-(con validación y métricas), no solo con opinión:
+> El formato PDF usa Chromium (Puppeteer lo descarga la primera vez, ~150 MB); los demás
+> formatos no lo necesitan.
+
+La inteligencia la pone **el agente que ya usas** — el servidor no llama a ningún LLM ni
+necesita API key, y todo corre en tu máquina. Luego trabajas en lenguaje natural; tu agente
+usa las herramientas del servidor de verdad (con validación y métricas), no solo con opinión:
 
 | Le dices a tu agente… | Qué pasa |
 |---|---|
@@ -80,10 +77,38 @@ Luego trabajas en lenguaje natural; tu agente usa las herramientas del servidor 
 
 Ciclo completo: **oferta → CV adaptado → postulación registrada → seguimiento → entrevista**.
 
-### 3. …o úsalo por línea de comandos (sin IA)
+### 2. …o descarga el código
+
+Útil si quieres modificar la herramienta, contribuir o correrla sin depender de npm:
 
 ```bash
-# Pruébalo ya con el CV de ejemplo (ficticio)
+git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
+npm install        # o: pnpm install · yarn · bun install
+```
+
+> Con **pnpm**: `pnpm approve-builds` para el postinstall de Puppeteer.
+
+Para conectar tu agente al clon local, apunta la config MCP al archivo en vez de a `npx`:
+
+```json
+{ "mcpServers": { "cv-tailor": {
+  "command": "node", "args": ["/ruta/a/cv-tailor/mcp-server.js"],
+  "env": { "CV_DIR": "/ruta/a/tu-carpeta-de-cv" }
+} } }
+```
+
+(Claude Code lee el `.mcp.json` del repo automáticamente al abrirlo.)
+
+### 3. …o úsalo por línea de comandos (sin IA)
+
+Instalado global (`npm install -g cv-tailor`) tienes el comando `cv-tailor`; desde el clon,
+usa `node generate.js`:
+
+```bash
+# Instalado global: trabaja en tu carpeta de datos
+cd ~/mi-cv && cv-tailor --variant tailored
+
+# Desde el clon: pruébalo ya con el CV de ejemplo (ficticio)
 CV_DIR=examples node generate.js --variant tailored
 
 # Hazlo tuyo: copia el ejemplo a tu carpeta privada y edítalo
@@ -251,9 +276,9 @@ cd ~/mi-cv && cv-tailor --variant tailored     # datos en ~/mi-cv
 CV_DIR=~/mi-cv cv-tailor --variant tailored    # desde cualquier lado
 ```
 
-Para tener el binario global: `npm link` (o `bun link`) dentro del clon — la publicación
-en npm/bunx está pendiente. Corriendo desde el propio repo (`node generate.js …`), la
-carpeta de datos es la raíz del repo.
+Para el binario global: `npm install -g cv-tailor` (o `npm link` / `bun link` dentro del
+clon). Corriendo desde el propio repo (`node generate.js …`), la carpeta de datos es la
+raíz del repo.
 
 </details>
 
