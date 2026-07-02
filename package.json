@@ -1,6 +1,6 @@
 {
   "name": "cv-tailor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn your AI agent into your job-application assistant: an MCP server (and CLI) that tailors your CV to each job posting, tracks applications and generates PDF/DOCX/HTML/Markdown — all local, no API keys.",
   "license": "MIT",
   "author": "Ariel Alvarado Riquelme",
@@ -9,17 +9,23 @@
     "url": "git+https://github.com/Overrid3CL/cv-tailor.git"
   },
   "keywords": [
-    "cv",
-    "resume",
-    "cover-letter",
     "mcp",
     "mcp-server",
+    "model-context-protocol",
     "ai",
+    "ai-agent",
+    "cv",
+    "curriculum-vitae",
+    "resume",
+    "cover-letter",
+    "tailor",
     "job-application",
     "ats",
+    "json-resume",
     "pdf",
+    "pdf-generator",
     "docx",
-    "json-resume"
+    "cli"
   ],
   "main": "template.js",
   "bin": {
