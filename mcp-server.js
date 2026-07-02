@@ -155,13 +155,13 @@ const TOOLS = [
   {
     name: "generate_cv",
     description:
-      "Generates documents for a variant by running generate.js. doc: cv (default), cover (requires cover_letter) or all. format: pdf, md, html, docx or all (default: pdf+md). template: visual theme. Returns the paths of the generated files.",
+      "Generates documents for one or more variants by running generate.js. doc: cv (default), cover (requires cover_letter) or all. format: pdf, md, html, docx or all (default: pdf+md). template: visual theme. Returns the paths of the generated files. For SEVERAL variants, prefer ONE call with a comma-separated list (or \"all\") over many single calls: the whole batch shares one browser instance. Concurrent calls are queued, not parallel.",
     inputSchema: {
       type: "object",
       required: ["variant"],
       additionalProperties: false,
       properties: {
-        variant: { type: "string", description: "Variant name (without .json)." },
+        variant: { type: "string", description: "Variant name (without .json), a comma-separated list (\"acme,globex\") or \"all\" for every variant — batches run in a single pass." },
         lang: {
           type: "string",
           enum: [...SUPPORTED_LANGS, "all"],
@@ -420,8 +420,18 @@ function toolError(err) {
   return { content: [{ type: "text", text: lines.join("\n") }], isError: true };
 }
 
+// Cola de generación: cada corrida de generate.js con PDF lanza un Chromium
+// (~cientos de MB); llamadas concurrentes se serializan para no saturar la
+// máquina cuando el cliente dispara muchos generate_cv seguidos.
+let generateChain = Promise.resolve();
+function enqueueGenerate(task) {
+  const run = generateChain.then(task, task);
+  generateChain = run.then(() => undefined, () => undefined);
+  return run;
+}
+
 function runGenerate(variant, lang, doc, format, template) {
-  return new Promise((resolve, reject) => {
+  return enqueueGenerate(() => new Promise((resolve, reject) => {
     const args = [
       path.join(__dirname, "generate.js"), // the code travels with the package
       "--variant", variant,
@@ -436,7 +446,7 @@ function runGenerate(variant, lang, doc, format, template) {
       if (err) reject(new Error(`generate.js failed: ${stderr || stdout || err.message}`));
       else resolve(stdout);
     });
-  });
+  }));
 }
 
 function variantSummary(name) {
@@ -506,23 +516,35 @@ async function handleTool(name, args) {
       const doc = args.doc || "cv";
       const format = args.format || "pdf,md";
       const template = args.template || DEFAULT_THEME;
-      if (!store.variantExists(args.variant)) throw new Error(`Variant not found: ${args.variant}`);
-      const variant = store.readVariant(args.variant);
-      if (doc === "cover" && !variant.cover_letter) {
-        throw new Error(`Variant "${args.variant}" does not define cover_letter (required by doc: cover)`);
+      // variant: nombre, lista "a,b,c" o "all". El lote corre en UNA pasada
+      // de generate.js — un único Chromium para todos los PDFs.
+      const names =
+        args.variant === "all"
+          ? store.listVariantNames()
+          : [...new Set(String(args.variant).split(",").map((v) => v.trim()).filter(Boolean))];
+      if (!names.length) throw new Error("No variants to generate.");
+      for (const n of names) {
+        if (!store.variantExists(n)) throw new Error(`Variant not found: ${n}`);
       }
-      const stdout = await runGenerate(args.variant, lang, doc, format, template);
+      const variantsByName = new Map(names.map((n) => [n, store.readVariant(n)]));
+      if (doc === "cover") {
+        for (const [n, v] of variantsByName) {
+          if (!v.cover_letter) throw new Error(`Variant "${n}" does not define cover_letter (required by doc: cover)`);
+        }
+      }
+      const stdout = await runGenerate(args.variant === "all" ? "all" : names.join(","), lang, doc, format, template);
       const langs = lang === "all" ? SUPPORTED_LANGS : [lang];
       const exts = format === "all" ? SUPPORTED_FORMATS : format.split(",").map((f) => f.trim()).filter(Boolean);
-      let docs;
-      if (doc === "all") docs = variant.cover_letter ? SUPPORTED_DOCS : ["cv"];
-      else docs = [doc];
-      const dir = path.join(config.outputDir(), args.variant);
-      const files = docs.flatMap((d) => {
-        const prefix = d === "cover" ? "cover-letter" : "cv";
-        return langs.flatMap((l) =>
-          exts.map((ext) => path.join(dir, `${prefix}-${args.variant}-${l}.${ext}`)),
-        );
+      const files = names.flatMap((name) => {
+        const variant = variantsByName.get(name);
+        const docs = doc === "all" ? (variant.cover_letter ? SUPPORTED_DOCS : ["cv"]) : [doc];
+        const dir = path.join(config.outputDir(), name);
+        return docs.flatMap((d) => {
+          const prefix = d === "cover" ? "cover-letter" : "cv";
+          return langs.flatMap((l) =>
+            exts.map((ext) => path.join(dir, `${prefix}-${name}-${l}.${ext}`)),
+          );
+        });
       });
       return json({ ok: true, files, log: stdout.trim() });
     }

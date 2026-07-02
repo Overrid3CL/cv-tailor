@@ -4,6 +4,7 @@
 // Usage:
 //   node generate.js --variant tailored
 //   node generate.js --variant all --lang all
+//   node generate.js --variant acme,globex,initech   # lote: un solo Chromium
 //   node generate.js --variant tailored --lang en --doc cover
 //   node generate.js --variant tailored --doc all --lang all --format all
 //   node generate.js --variant tailored --template modern
@@ -11,7 +12,7 @@
 //   node generate.js --variant tailored --lang en --out ~/Desktop/cv.pdf
 //   node generate.js --list
 //
-// --variant: nombre de variant, o "all" para todas.
+// --variant: nombre de variant, lista separada por comas, o "all" para todas.
 // --lang:    es (default) | en | all (todos los idiomas de base.labels).
 // --doc:     cv (default) | cover | all.
 // --format:  lista separada por comas de pdf,md,html,docx o "all". Default: pdf,md.
@@ -72,15 +73,19 @@ if (args.includes("--list")) {
   process.exit(0);
 }
 
-// --variant (required; "all" expands to every variant)
+// --variant (required; "all" expands to every variant; also accepts a
+// comma-separated list — one run shares a single Chromium for the whole batch)
 const variantArg = flag("--variant");
 if (!variantArg) {
   fail(
-    "Usage: node generate.js --variant <name|all> [--lang es|en|all] [--doc cv|cover|all] [--format pdf,md,html,docx|all] [--template <theme>] [--out <path>]\n" +
+    "Usage: node generate.js --variant <name|a,b,c|all> [--lang es|en|all] [--doc cv|cover|all] [--format pdf,md,html,docx|all] [--template <theme>] [--out <path>]\n" +
       "       node generate.js --list",
   );
 }
-const variantNames = variantArg === "all" ? listVariantFiles() : [variantArg];
+const variantNames =
+  variantArg === "all"
+    ? listVariantFiles()
+    : [...new Set(variantArg.split(",").map((v) => v.trim()).filter(Boolean))];
 if (!variantNames.length) fail("No variants to generate.");
 for (const n of variantNames) {
   if (!fs.existsSync(path.join(VARIANTS_DIR, `${n}.json`))) fail(`Variant not found: ${n}`);
