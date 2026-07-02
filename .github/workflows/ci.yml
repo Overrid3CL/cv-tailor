@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Unit tests (the test runner is bun; see CONTRIBUTING).
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # The tests never launch Chrome; skip the download in CI.
+      PUPPETEER_SKIP_DOWNLOAD: "1"
+      # No personal data in the repo: validate/generate run against examples/.
+      CV_DIR: examples
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate the example data
+        run: bun run validate
+
+      - name: Tests
+        run: bun test
+
+  # The tool must work with plain Node + npm (no bun): install, validate and
+  # actually generate through the path an npm/pnpm user would take.
+  node:
+    runs-on: ubuntu-latest
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "1"
+      CV_DIR: examples
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies with npm
+        run: npm install --no-audit --no-fund
+
+      - name: Validate with node
+        run: node validate.js
+
+      - name: Generate documents with node (no Chrome)
+        run: |
+          node generate.js --variant tailored --format md,html,docx --lang all
+          test -f examples/output/tailored/cv-tailored-en.docx

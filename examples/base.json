@@ -1,0 +1,124 @@
+{
+  "name": "Alex Doe",
+  "contact": "Ciudad, País  ·  alex@example.com  ·  +00 000 000 000  ·  linkedin.com/in/alexdoe",
+  "labels": {
+    "es": {
+      "summary": "Resumen Profesional",
+      "experience": "Experiencia Profesional",
+      "education": "Educación",
+      "skills": "Habilidades Técnicas",
+      "languages": "Idiomas",
+      "closing": "Atentamente,"
+    },
+    "en": {
+      "summary": "Professional Summary",
+      "experience": "Experience",
+      "education": "Education",
+      "skills": "Technical Skills",
+      "languages": "Languages",
+      "closing": "Sincerely,"
+    }
+  },
+  "dateTokens": {
+    "en": {
+      "Ene": "Jan",
+      "Abr": "Apr",
+      "Ago": "Aug",
+      "Dic": "Dec",
+      "Presente": "Present"
+    }
+  },
+  "links": [
+    { "label": "GitHub", "url": "https://github.com/alexdoe" },
+    { "label": "Portfolio", "url": "https://alexdoe.example.com" }
+  ],
+  "experience": [
+    {
+      "id": "acme-senior",
+      "title": { "es": "Ingeniero de Software Senior", "en": "Senior Software Engineer" },
+      "company": { "es": "Acme Corp · Remoto", "en": "Acme Corp · Remote" },
+      "dates": "Ene 2022 – Presente",
+      "bullets": [
+        {
+          "es": "Lideré el diseño de una arquitectura de microservicios que procesa más de 10.000 solicitudes por minuto.",
+          "en": "Led the design of a microservices architecture processing over 10,000 requests per minute."
+        },
+        {
+          "es": "Mentoré a un equipo de 4 desarrolladores y establecí prácticas de revisión de código y CI/CD.",
+          "en": "Mentored a team of 4 developers and established code review and CI/CD practices."
+        }
+      ]
+    },
+    {
+      "id": "startup-dev",
+      "title": { "es": "Desarrollador Full-Stack", "en": "Full-Stack Developer" },
+      "company": { "es": "Startup XYZ · Ciudad, País", "en": "Startup XYZ · City, Country" },
+      "dates": "Ago 2019 – Dic 2021",
+      "bullets": [
+        {
+          "es": "Construí la aplicación web principal con React y Node.js desde cero.",
+          "en": "Built the main web application with React and Node.js from scratch."
+        },
+        {
+          "es": "Implementé la integración de pagos y el sistema de notificaciones.",
+          "en": "Implemented the payments integration and notification system."
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": { "es": "Ingeniería en Informática", "en": "Computer Science Engineering" },
+      "institution": "Universidad Ejemplo",
+      "dates": "2015 – 2019"
+    }
+  ],
+  "skills": {
+    "backend": {
+      "label": { "es": "Backend", "en": "Backend" },
+      "value": "Node.js, TypeScript, Go, PostgreSQL, REST, gRPC"
+    },
+    "frontend": {
+      "label": { "es": "Frontend", "en": "Frontend" },
+      "value": "React, Next.js, TypeScript, TailwindCSS"
+    },
+    "infra": {
+      "label": { "es": "Infra & DevOps", "en": "Infra & DevOps" },
+      "value": "Docker, Kubernetes, AWS, GitHub Actions, Terraform"
+    }
+  },
+  "languages": [
+    { "es": "Español — Nativo", "en": "Spanish — Native" },
+    { "es": "Inglés — Avanzado (C1)", "en": "English — Advanced (C1)" }
+  ],
+  "custom_sections": [
+    {
+      "id": "projects",
+      "label": { "es": "Proyectos", "en": "Projects" },
+      "layout": "entries",
+      "items": [
+        {
+          "title": { "es": "Open Source CLI", "en": "Open Source CLI" },
+          "url": "https://github.com/alexdoe/cli",
+          "dates": "2023",
+          "description": {
+            "es": "Herramienta de línea de comandos con 500+ estrellas en GitHub.",
+            "en": "Command-line tool with 500+ stars on GitHub."
+          },
+          "bullets": [
+            { "es": "Escrita en Go, distribuida vía Homebrew y npm.", "en": "Written in Go, distributed via Homebrew and npm." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "certifications",
+      "label": { "es": "Certificaciones", "en": "Certifications" },
+      "layout": "list",
+      "items": [
+        { "es": "AWS Certified Solutions Architect · 2023", "en": "AWS Certified Solutions Architect · 2023" },
+        { "es": "Certified Kubernetes Administrator (CKA) · 2022", "en": "Certified Kubernetes Administrator (CKA) · 2022" }
+      ]
+    }
+  ]
+}

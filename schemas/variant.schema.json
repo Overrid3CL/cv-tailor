@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cv-tailor/variant.schema.json",
+  "title": "CV variant",
+  "description": "Overrides on top of base.json. Every field is optional; include only what changes. References (experience_ids, skills_order, experience ids) are also validated semantically against base.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": { "$ref": "#/definitions/translatable" },
+    "contact": { "$ref": "#/definitions/translatable" },
+    "headline": { "$ref": "#/definitions/translatable" },
+    "summary": { "$ref": "#/definitions/translatable" },
+    "experience_ids": {
+      "type": "array",
+      "description": "Which experience entries to show, and in what order.",
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+      "uniqueItems": true
+    },
+    "experience": {
+      "type": "object",
+      "description": "Overrides by id: merged onto the base entry with that id, or defines a new entry if the id is not in base (in that case title, company, dates and bullets are required — validated semantically).",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/definitions/experienceOverride" }
+    },
+    "skills": {
+      "type": "object",
+      "description": "Overrides by key: replaces label/value or adds a new section (in that case label and value are required — validated semantically).",
+      "additionalProperties": { "$ref": "#/definitions/skillOverride" }
+    },
+    "skills_order": {
+      "type": "array",
+      "description": "Order and filter of skill sections.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "education": {
+      "type": "array",
+      "description": "Replaces the whole education array.",
+      "items": { "$ref": "#/definitions/educationEntry" }
+    },
+    "languages": {
+      "type": "array",
+      "description": "Replaces the whole languages array.",
+      "items": { "$ref": "#/definitions/translatable" }
+    },
+    "links": {
+      "type": "array",
+      "description": "Replaces the whole header-links array.",
+      "items": { "$ref": "#/definitions/linkEntry" }
+    },
+    "custom_sections": {
+      "type": "object",
+      "description": "Overrides by id: merged onto the base section with that id (label/layout/items) or defines a new one (in that case label and items are required — validated semantically).",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/definitions/customSectionOverride" }
+    },
+    "custom_sections_order": {
+      "type": "array",
+      "description": "Order and filter of custom sections.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    },
+    "cover_letter": {
+      "type": "object",
+      "description": "The variant's cover letter. Only body is required; the rest are optional header lines.",
+      "required": ["body"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "$ref": "#/definitions/translatable" },
+        "recipient": { "$ref": "#/definitions/translatable" },
+        "company": { "$ref": "#/definitions/translatable" },
+        "subject": { "$ref": "#/definitions/translatable" },
+        "body": {
+          "type": "array",
+          "description": "Letter paragraphs, in order.",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/translatable" }
+        },
+        "closing": { "$ref": "#/definitions/translatable" }
+      }
+    }
+  },
+  "definitions": {
+    "translatable": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "minProperties": 1
+        }
+      ]
+    },
+    "experienceOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "$ref": "#/definitions/translatable" },
+        "company": { "$ref": "#/definitions/translatable" },
+        "dates": { "$ref": "#/definitions/translatable" },
+        "bullets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/translatable" }
+        }
+      }
+    },
+    "skillOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/definitions/translatable" },
+        "value": { "$ref": "#/definitions/translatable" }
+      }
+    },
+    "linkEntry": {
+      "type": "object",
+      "required": ["url"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/definitions/translatable" },
+        "url": { "type": "string" }
+      }
+    },
+    "customSectionOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/definitions/translatable" },
+        "layout": { "enum": ["entries", "list", "inline"] },
+        "items": { "type": "array" }
+      }
+    },
+    "educationEntry": {
+      "type": "object",
+      "required": ["degree", "institution", "dates"],
+      "additionalProperties": false,
+      "properties": {
+        "degree": { "$ref": "#/definitions/translatable" },
+        "institution": { "$ref": "#/definitions/translatable" },
+        "dates": { "$ref": "#/definitions/translatable" }
+      }
+    }
+  }
+}

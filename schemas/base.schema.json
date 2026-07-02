@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cv-tailor/base.schema.json",
+  "title": "CV base",
+  "description": "The full CV document. Translatable strings accept a plain string (same in every language) or an object keyed by language code, e.g. { \"es\": \"...\", \"en\": \"...\" }. The first key of `labels` acts as the pivot (authoring) language.",
+  "type": "object",
+  "required": ["name", "contact", "labels", "experience", "education", "skills", "languages"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "$ref": "#/definitions/translatable" },
+    "contact": { "$ref": "#/definitions/translatable" },
+    "labels": {
+      "type": "object",
+      "description": "Section labels per language. Each key is a language code; every language must define the same labels. The first key is the pivot language.",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/definitions/labelSet" }
+    },
+    "dateTokens": {
+      "type": "object",
+      "description": "Date-token replacements per target language. Dates are authored in the pivot language; for each other language list the replacements, e.g. { \"en\": { \"Ene\": \"Jan\" } }.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    },
+    "links": {
+      "type": "array",
+      "description": "Header links (GitHub, portfolio, etc.).",
+      "items": { "$ref": "#/definitions/linkEntry" }
+    },
+    "experience": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/experienceEntry" }
+    },
+    "custom_sections": {
+      "type": "array",
+      "description": "Extra sections (projects, certifications, etc.). Rendered at the end, in order.",
+      "items": { "$ref": "#/definitions/customSection" }
+    },
+    "education": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/educationEntry" }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/skillSection" }
+    },
+    "languages": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/translatable" }
+    },
+    "stopwords": {
+      "type": "array",
+      "description": "Extra stopwords (any language) ignored by the job-match keyword extraction — extend the built-in es/en lists for other languages or noisy domain terms.",
+      "items": { "type": "string" }
+    },
+    "weak_starters": {
+      "type": "array",
+      "description": "Extra weak bullet openers (any language) flagged by the CV lint — extend the built-in es/en list.",
+      "items": { "type": "string" }
+    }
+  },
+  "definitions": {
+    "translatable": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "minProperties": 1
+        }
+      ]
+    },
+    "labelSet": {
+      "type": "object",
+      "required": ["summary", "experience", "education", "skills", "languages"],
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "summary": { "type": "string" },
+        "experience": { "type": "string" },
+        "education": { "type": "string" },
+        "skills": { "type": "string" },
+        "languages": { "type": "string" },
+        "closing": { "type": "string", "description": "Default cover-letter sign-off in this language." }
+      }
+    },
+    "linkEntry": {
+      "type": "object",
+      "required": ["url"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/definitions/translatable" },
+        "url": { "type": "string" }
+      }
+    },
+    "customSection": {
+      "type": "object",
+      "required": ["id", "label", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "label": { "$ref": "#/definitions/translatable" },
+        "layout": {
+          "enum": ["entries", "list", "inline"],
+          "description": "entries (title/subtitle/dates/bullets), list (plain bullets) or inline (label: value). Default: entries."
+        },
+        "items": {
+          "type": "array",
+          "description": "Shape depends on layout: entries -> objects { title, subtitle?, dates?, url?, description?, bullets? }; list -> strings; inline -> { label, value }."
+        }
+      }
+    },
+    "experienceEntry": {
+      "type": "object",
+      "required": ["id", "title", "company", "dates", "bullets"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "title": { "$ref": "#/definitions/translatable" },
+        "company": { "$ref": "#/definitions/translatable" },
+        "dates": { "$ref": "#/definitions/translatable" },
+        "bullets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/translatable" }
+        }
+      }
+    },
+    "educationEntry": {
+      "type": "object",
+      "required": ["degree", "institution", "dates"],
+      "additionalProperties": false,
+      "properties": {
+        "degree": { "$ref": "#/definitions/translatable" },
+        "institution": { "$ref": "#/definitions/translatable" },
+        "dates": { "$ref": "#/definitions/translatable" }
+      }
+    },
+    "skillSection": {
+      "type": "object",
+      "required": ["label", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/definitions/translatable" },
+        "value": { "$ref": "#/definitions/translatable" }
+      }
+    }
+  }
+}

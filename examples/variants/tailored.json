@@ -1,0 +1,35 @@
+{
+  "headline": {
+    "es": "Ingeniero de Software Senior · Backend & Cloud",
+    "en": "Senior Software Engineer · Backend & Cloud"
+  },
+  "summary": {
+    "es": "Ingeniero de software con 5+ años construyendo sistemas backend escalables y liderando equipos pequeños. Enfocado en arquitecturas de microservicios, cloud y calidad.",
+    "en": "Software engineer with 5+ years building scalable backend systems and leading small teams. Focused on microservices architecture, cloud and quality."
+  },
+  "experience_ids": ["acme-senior", "startup-dev"],
+  "skills_order": ["backend", "infra", "frontend"],
+  "custom_sections_order": ["projects", "certifications"],
+  "cover_letter": {
+    "recipient": { "es": "Equipo de Selección", "en": "Hiring Team" },
+    "company": "Example Inc.",
+    "subject": {
+      "es": "Postulación: Ingeniero de Software Senior",
+      "en": "Application: Senior Software Engineer"
+    },
+    "body": [
+      {
+        "es": "Escribo para postular al cargo de Ingeniero de Software Senior. Con más de 5 años de experiencia construyendo sistemas backend de alto volumen, creo que puedo aportar valor de inmediato a su equipo.",
+        "en": "I'm writing to apply for the Senior Software Engineer role. With over 5 years of experience building high-volume backend systems, I believe I can add value to your team right away."
+      },
+      {
+        "es": "En Acme Corp lideré el diseño de una arquitectura de microservicios que procesa más de 10.000 solicitudes por minuto, y mentoré a un equipo de cuatro desarrolladores.",
+        "en": "At Acme Corp I led the design of a microservices architecture processing over 10,000 requests per minute, and mentored a team of four developers."
+      },
+      {
+        "es": "Me entusiasma la posibilidad de aportar mi experiencia en cloud y arquitecturas distribuidas a su producto. Quedo atento a la posibilidad de conversar.",
+        "en": "I'm excited about the possibility of bringing my cloud and distributed-systems experience to your product. I'd welcome the chance to talk further."
+      }
+    ]
+  }
+}

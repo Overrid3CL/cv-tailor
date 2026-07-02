@@ -1,0 +1,12 @@
+node_modules/
+output/
+.claude/
+
+# Personal CV data lives in YOUR data directory, never in the repo. These are
+# ignored at the ROOT only (anchored with /) so examples/ stays versioned.
+# Start from examples/ (copy it to your own folder and point CV_DIR at it).
+/base.json
+/variants/
+/achievements.json
+/applications.json
+/applications/

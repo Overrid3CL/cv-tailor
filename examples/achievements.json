@@ -1,0 +1,45 @@
+[
+  {
+    "id": "microservices-scale",
+    "tags": ["backend", "architecture"],
+    "skills": ["Node.js", "Kubernetes", "gRPC"],
+    "text": {
+      "es": "Diseñé una arquitectura de microservicios que procesa más de 10.000 solicitudes por minuto con 99,9% de disponibilidad.",
+      "en": "Designed a microservices architecture processing over 10,000 requests per minute at 99.9% availability."
+    },
+    "metric": "10.000+ req/min, 99,9% uptime",
+    "source": "acme-senior"
+  },
+  {
+    "id": "mentoring",
+    "tags": ["leadership"],
+    "skills": ["Code Review", "CI/CD"],
+    "text": {
+      "es": "Mentoré a 4 desarrolladores y establecí prácticas de revisión de código que redujeron los bugs en producción un 30%.",
+      "en": "Mentored 4 developers and established code review practices that reduced production bugs by 30%."
+    },
+    "metric": "-30% bugs en producción",
+    "source": "acme-senior"
+  },
+  {
+    "id": "payments-integration",
+    "tags": ["backend", "payments"],
+    "skills": ["Stripe", "Webhooks", "PostgreSQL"],
+    "text": {
+      "es": "Implementé la integración de pagos end-to-end (checkout, webhooks, reconciliación) para 50.000 usuarios activos.",
+      "en": "Implemented the end-to-end payments integration (checkout, webhooks, reconciliation) for 50,000 active users."
+    },
+    "metric": "50.000 usuarios activos",
+    "source": "startup-dev"
+  },
+  {
+    "id": "oss-cli",
+    "tags": ["opensource"],
+    "skills": ["Go", "Homebrew"],
+    "text": {
+      "es": "Publiqué una CLI open source en Go con más de 500 estrellas en GitHub, distribuida vía Homebrew y npm.",
+      "en": "Published an open source CLI in Go with 500+ GitHub stars, distributed via Homebrew and npm."
+    },
+    "metric": "500+ estrellas"
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "id": "2026-07-example-inc-tailored",
+    "company": "Example Inc.",
+    "role": "Senior Software Engineer",
+    "date": "2026-07-01",
+    "variant": "tailored",
+    "lang": "es",
+    "status": "sent",
+    "match_score": 87,
+    "job_url": "https://example.com/jobs/senior-swe",
+    "notes": "Referido por Alex; seguimiento la próxima semana."
+  },
+  {
+    "id": "2026-06-acme-corp-tailored",
+    "company": "Acme Corp",
+    "role": "Backend Engineer",
+    "date": "2026-06-20",
+    "variant": "tailored",
+    "lang": "en",
+    "status": "interview",
+    "updated": "2026-06-28",
+    "notes": "Entrevista técnica agendada."
+  }
+]

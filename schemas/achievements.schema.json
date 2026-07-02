@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cv-tailor/achievements.schema.json",
+  "title": "Achievements bank",
+  "description": "Bank of professional achievements, more granular than the CV. Each achievement is real raw material from which per-job bullets are written (the CV shows a selection; the bank keeps everything). Optional file: achievements.json in the data directory.",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/achievement"
+  },
+  "definitions": {
+    "translatable": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "minProperties": 1
+        }
+      ]
+    },
+    "achievement": {
+      "type": "object",
+      "required": [
+        "id",
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "text": {
+          "$ref": "#/definitions/translatable",
+          "description": "The achievement, written out (ideally with the metric embedded)."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Free-form topical tags (backend, payments, leadership…).",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "skills": {
+          "type": "array",
+          "description": "Technologies/skills involved (Java, Saga, LangChain…).",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "metric": {
+          "type": "string",
+          "description": "The hard metric behind the achievement, if any (e.g. \"5,000+ tx/day\")."
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Id of the base.json experience entry where it happened (validated semantically)."
+        }
+      }
+    }
+  }
+}

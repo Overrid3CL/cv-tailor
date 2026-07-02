@@ -1,0 +1,49 @@
+{
+  "name": "cv-tailor",
+  "version": "1.0.0",
+  "description": "Turn your AI agent into your job-application assistant: an MCP server (and CLI) that tailors your CV to each job posting, tracks applications and generates PDF/DOCX/HTML/Markdown — all local, no API keys.",
+  "license": "MIT",
+  "author": "Ariel Alvarado Riquelme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Overrid3CL/cv-tailor.git"
+  },
+  "keywords": [
+    "cv",
+    "resume",
+    "cover-letter",
+    "mcp",
+    "mcp-server",
+    "ai",
+    "job-application",
+    "ats",
+    "pdf",
+    "docx",
+    "json-resume"
+  ],
+  "main": "template.js",
+  "bin": {
+    "cv-tailor": "generate.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "gen": "node generate.js",
+    "import": "node import.js",
+    "match": "node match.js",
+    "lint": "node lint.js",
+    "validate": "node validate.js",
+    "mcp": "node mcp-server.js",
+    "test": "bun test"
+  },
+  "trustedDependencies": [
+    "puppeteer"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "ajv": "^8.20.0",
+    "docx": "^9.7.1",
+    "puppeteer": "^22.0.0"
+  }
+}

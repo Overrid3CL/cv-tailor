@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "cv-tailor/applications.schema.json",
+  "title": "Applications tracker",
+  "description": "Job-application log: which variant was sent to which company, when, and its current status. Optional file: applications.json in the data directory. Each application may have a frozen snapshot in applications/<id>/ (the exact PDF sent + the variant at that moment).",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/application"
+  },
+  "definitions": {
+    "application": {
+      "type": "object",
+      "required": [
+        "id",
+        "company",
+        "role",
+        "date",
+        "variant"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Role applied for."
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Date sent (ISO YYYY-MM-DD)."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Variant used when applying. Not required to still exist: the snapshot preserves it."
+        },
+        "lang": {
+          "type": "string",
+          "description": "Language of the CV sent."
+        },
+        "status": {
+          "enum": [
+            "sent",
+            "interview",
+            "offer",
+            "rejected",
+            "ghosted"
+          ],
+          "description": "Application status (default on creation: sent)."
+        },
+        "match_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "analyze_job_match score at application time (if the job posting was provided)."
+        },
+        "job_url": {
+          "type": "string"
+        },
+        "job_text": {
+          "type": "string",
+          "description": "Job posting text. Stored because it feeds interview_prep later."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "updated": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last status/notes update."
+        }
+      }
+    }
+  }
+}

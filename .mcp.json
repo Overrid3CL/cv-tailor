@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cv-tailor": {
+      "command": "node",
+      "args": ["mcp-server.js"]
+    }
+  }
+}
