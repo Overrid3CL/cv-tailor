@@ -1,6 +1,6 @@
 // test/match.test.js — análisis determinista oferta vs CV (lib/match.js)
 const { describe, test, expect } = require("bun:test");
-const { normalize, tokenize, extractKeywords, cvCorpus, matchJob, rankVariants } = require("../lib/match");
+const { normalize, tokenize, detectLang, extractKeywords, cvCorpus, matchJob, rankVariants } = require("../lib/match");
 
 const fixtureBase = () => ({
   name: "Jane Doe",
@@ -36,6 +36,14 @@ Requisitos: experiencia con Java y Spring Boot. Conocimientos de Kubernetes y AW
 Deseable: Terraform, GraphQL. Java y Spring Boot son excluyentes.
 Trabajarás con microservicios y CI/CD.
 Microservicios de alto volumen. GraphQL para las APIs nuevas.
+`;
+
+const JOB_EN = `
+We are looking for a Senior Backend Engineer to join our team.
+Requirements: strong experience with Java and Spring Boot. Knowledge of Kubernetes and AWS.
+Nice to have: Terraform, GraphQL. Java and Spring Boot are required.
+You will work with microservices and CI/CD pipelines.
+High-volume microservices. GraphQL for the new APIs.
 `;
 
 describe("normalize / tokenize", () => {
@@ -112,6 +120,37 @@ describe("matchJob", () => {
     expect(report.matched.map((m) => m.keyword)).toEqual(
       expect.arrayContaining(["java", "spring boot", "kubernetes"]),
     );
+  });
+
+  test("sin lang: detecta el idioma de la oferta y evalúa el CV en ese idioma", () => {
+    const auto = matchJob(JOB_EN, fixtureBase());
+    expect(auto.lang).toBe("en");
+    // Mismo resultado que forzando "en" explícito
+    const explicit = matchJob(JOB_EN, fixtureBase(), {}, "en");
+    expect(auto.score).toBe(explicit.score);
+    // Los términos descriptivos en inglés cruzan contra la versión en inglés
+    expect(auto.matched.map((m) => m.keyword)).toContain("microservices");
+  });
+
+  test("sin lang y sin señal de idioma: cae al idioma pivote del CV", () => {
+    const report = matchJob("Java Kubernetes AWS", fixtureBase());
+    expect(report.lang).toBe("es"); // primera clave de labels
+  });
+});
+
+describe("detectLang", () => {
+  test("detecta español e inglés", () => {
+    expect(detectLang(JOB_ES, ["es", "en"])).toBe("es");
+    expect(detectLang(JOB_EN, ["es", "en"])).toBe("en");
+  });
+
+  test("sin señal clara devuelve null", () => {
+    expect(detectLang("Java Kubernetes AWS Docker", ["es", "en"])).toBe(null);
+    expect(detectLang("", ["es", "en"])).toBe(null);
+  });
+
+  test("respeta los idiomas candidatos", () => {
+    expect(detectLang(JOB_EN, ["es"])).toBe(null); // "en" no es candidato
   });
 });
 

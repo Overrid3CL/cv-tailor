@@ -5,14 +5,17 @@
 //   node match.js --job oferta.txt                  # contra el base (sin variant)
 //   node match.js --job oferta.txt --variant tailored
 //   node match.js --job oferta.txt --variant all    # rankea todas las variants
-//   node match.js --job oferta.txt --lang en
+//   node match.js --job oferta.txt --lang en       # forzar idioma del CV
+//
+// Sin --lang, el idioma del CV a evaluar se detecta del texto de la oferta
+// (una oferta en inglés se compara contra la versión en inglés del CV).
 //
 // 100% determinista (sin LLM): keywords por frecuencia/siglas/skills del CV y
 // score de cobertura ponderada. Ver lib/match.js.
 
 const fs = require("fs");
 const path = require("path");
-const { matchJob, rankVariants } = require("./lib/match");
+const { matchJob, rankVariants, detectLang } = require("./lib/match");
 const { supportedLangs } = require("./template");
 const { validateBase } = require("./lib/validate");
 const config = require("./lib/config");
@@ -43,10 +46,11 @@ const base = config.loadBase();
 const baseCheck = validateBase(base);
 if (!baseCheck.valid) fail(`Validation failed (base.json):\n  - ${baseCheck.errors.join("\n  - ")}`);
 
-const lang = flag("--lang", "es");
-if (!supportedLangs(base).includes(lang)) {
-  fail(`Unsupported --lang "${lang}". Use: ${supportedLangs(base).join(", ")}`);
+const langFlag = flag("--lang");
+if (langFlag && !supportedLangs(base).includes(langFlag)) {
+  fail(`Unsupported --lang "${langFlag}". Use: ${supportedLangs(base).join(", ")}`);
 }
+const lang = langFlag || detectLang(jobText, supportedLangs(base)) || supportedLangs(base)[0];
 
 const variantArg = flag("--variant");
 

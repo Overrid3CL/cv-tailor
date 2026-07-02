@@ -1,6 +1,6 @@
 {
   "name": "cv-tailor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Turn your AI agent into your job-application assistant: an MCP server (and CLI) that tailors your CV to each job posting, tracks applications and generates PDF/DOCX/HTML/Markdown — all local, no API keys.",
   "license": "MIT",
   "author": "Ariel Alvarado Riquelme",

@@ -196,7 +196,7 @@ const TOOLS = [
       properties: {
         job: { type: "string", description: "Full job posting text." },
         variant: { type: "string", description: "Variant to evaluate (omit to evaluate the base and rank all)." },
-        lang: { type: "string", enum: SUPPORTED_LANGS, description: "CV language to evaluate (default: es)." },
+        lang: { type: "string", enum: SUPPORTED_LANGS, description: "CV language to evaluate. Omit to auto-detect from the posting's language (recommended): an English posting is matched against the English CV. The report includes the language used." },
       },
     },
   },
@@ -250,7 +250,7 @@ const TOOLS = [
       properties: {
         job: { type: "string", description: "Full job posting text." },
         top: { type: "number", description: "How many achievements to return (default: 10)." },
-        lang: { type: "string", enum: SUPPORTED_LANGS, description: "Language of the achievement texts (default: es)." },
+        lang: { type: "string", enum: SUPPORTED_LANGS, description: "Language of the achievement texts. Omit to auto-detect from the posting's language." },
       },
     },
   },
@@ -528,7 +528,9 @@ async function handleTool(name, args) {
     }
 
     case "analyze_job_match": {
-      const lang = args.lang || "es";
+      // lang null → matchJob/rankVariants detectan el idioma de la oferta y
+      // evalúan el CV en ese idioma (el reporte incluye cuál se usó).
+      const lang = args.lang || null;
       const base = store.readBase();
       if (args.variant) {
         const variant = store.readVariant(args.variant);
@@ -577,7 +579,7 @@ async function handleTool(name, args) {
       } catch {
         extraStopwords = undefined;
       }
-      const ranking = rankAchievements(args.job, list, args.lang || "es", { top: args.top || 10, extraStopwords });
+      const ranking = rankAchievements(args.job, list, args.lang || null, { top: args.top || 10, extraStopwords, langs: SUPPORTED_LANGS });
       const byId = new Map(list.map((a) => [a.id, a]));
       return json(ranking.map((r) => ({ ...r, achievement: byId.get(r.id) })));
     }
@@ -778,22 +780,25 @@ function tailorPrompt(args) {
   const job = args.job || "(paste the job posting text here)";
   const variantName = args.variant || "tailored";
   const withCover = String(args.cover_letter || "").toLowerCase() === "true";
-  const lang = args.lang || "es";
+  // Sin lang explícito, el idioma de trabajo sigue al de la oferta: se omite
+  // lang en analyze_job_match (autodetección) y se usa el que reporte.
+  const lang = args.lang || null;
+  const langLabel = lang || "the posting's language, as reported by analyze_job_match";
   const text = [
     "You are an expert CV assistant connected to this project via MCP. " + SPEAK_USER_LANGUAGE,
-    `Goal: tailor my CV to the job posting below by creating/updating the variant "${variantName}" (working language: ${lang}), with a measurable match improvement.`,
+    `Goal: tailor my CV to the job posting below by creating/updating the variant "${variantName}" (working language: ${langLabel}), with a measurable match improvement.`,
     "",
     "HARD RULE: do not invent experience, technologies or metrics. Everything you write must come from base.json or the achievements bank. A job keyword I do not cover does NOT get added to the CV; it simply stays out.",
     "",
     "Process:",
-    `1. DIAGNOSIS — call analyze_job_match with the posting (no variant, lang: "${lang}"): get the base score, the ranking of existing variants (if the best variant beats the base, start from it) and the covered/missing keywords.`,
+    `1. DIAGNOSIS — call analyze_job_match with the posting (no variant${lang ? `, lang: "${lang}"` : ", omit lang so it is auto-detected from the posting"}): get the base score, the language used (reuse it in every later call), the ranking of existing variants (if the best variant beats the base, start from it) and the covered/missing keywords.`,
     "2. MATERIAL — call get_base (experience ids, skill keys) and suggest_achievements with the posting: those are the most relevant real achievements (if the bank is empty, continue with base only). That is the raw material for the bullets.",
     `3. REWRITE — call upsert_variant with name "${variantName}": headline and summary aimed at the role; experience_ids and skills_order prioritizing what matters; bullets rewritten using the posting keywords THAT ARE actually covered by my experience (use the posting's exact vocabulary when it is the same concept, e.g. "microservices" ↔ "microservicios").`,
     withCover
       ? "4. LETTER — include a cover_letter in the same variant (3-4 paragraphs, professional and warm) connecting my concrete achievements with what the posting asks for."
       : "4. (No cover letter unless I ask for one.)",
     `5. VERIFY — call analyze_job_match again with variant: "${variantName}". Report initial → final score. If the score did not improve or is below another variant, check which covered keywords were left out of the writing and iterate ONCE more (step 3).`,
-    `6. DELIVER — call generate_cv (variant: "${variantName}"${withCover ? ', doc: "all"' : ""}, lang: "${lang}") and give me the paths + a summary of what you changed and why.`,
+    `6. DELIVER — call generate_cv (variant: "${variantName}"${withCover ? ', doc: "all"' : ""}, lang: ${lang ? `"${lang}"` : "the working language from step 1"}) and give me the paths + a summary of what you changed and why.`,
     `7. LOG — when I confirm I applied, log it with log_application (company, role, variant: "${variantName}", job_text with the posting): it freezes the snapshot of the exact PDF sent and stores the match_score.`,
     "",
     "Job posting:",
@@ -867,18 +872,18 @@ function minePrompt(args) {
 
 // interview_prep: likely questions + STAR answers from real achievements.
 function interviewPrompt(args) {
-  const lang = args.lang || "es";
+  const lang = args.lang || null;
   const hasApplication = Boolean(args.application);
   const jobSource = hasApplication
     ? `the tracked application "${args.application}" (call list_applications and use its stored job_text, variant and match_score)`
     : "the job posting included below";
   const text = [
     "You are a technical interview coach connected to this project via MCP. " + SPEAK_USER_LANGUAGE,
-    `Goal: prepare me for the interview of ${jobSource} (language: ${lang}). Analysis only — do not write anything.`,
+    `Goal: prepare me for the interview of ${jobSource} (language: ${lang || "the posting's language"}). Analysis only — do not write anything.`,
     "",
     "Process:",
     `1. Get the posting: ${hasApplication ? "list_applications → the entry with that id (if it has no job_text, ask me for it)" : "the text below"}.`,
-    `2. Call analyze_job_match (lang: "${lang}"${hasApplication ? ", with the application's variant" : ""}), get_base and suggest_achievements with the posting.`,
+    `2. Call analyze_job_match (${lang ? `lang: "${lang}"` : "omit lang so it is auto-detected from the posting"}${hasApplication ? ", with the application's variant" : ""}), get_base and suggest_achievements with the posting.`,
     "3. Deliver the preparation in four blocks:",
     "   A. Likely TECHNICAL QUESTIONS (from the posting's highest-weight keywords): for each one, which experience or achievement I answer with, in STAR format (situation, task, action, result with metric).",
     "   B. Likely BEHAVIORAL QUESTIONS for the role's seniority (leadership, conflict, priorities): same format, anchored to my real achievements.",
