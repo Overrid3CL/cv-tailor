@@ -18,8 +18,9 @@
 // --format:  lista separada por comas de pdf,md,html,docx o "all". Default: pdf,md.
 // --template: tema visual (ver templates/). Default: classic.
 //
-// Set PUPPETEER_EXECUTABLE_PATH to use an existing Chrome/Chromium install and
-// PUPPETEER_LAUNCH_ARGS for extra flags (e.g. "--no-sandbox" in Docker/CI).
+// PDF uses the system's Chrome/Edge/Chromium (nothing is downloaded): set
+// PUPPETEER_EXECUTABLE_PATH for a custom location and PUPPETEER_LAUNCH_ARGS
+// for extra flags (e.g. "--no-sandbox" in Docker/CI).
 // PDF es el único formato que necesita Chrome; md/html/docx no lo lanzan.
 
 const fs = require("fs");
@@ -137,6 +138,51 @@ function needsBrowser() {
   return formats.includes("pdf");
 }
 
+// Localiza un navegador Chromium para el PDF (puppeteer-core no descarga
+// ninguno): PUPPETEER_EXECUTABLE_PATH manda; si no, se busca Chrome/Edge/
+// Chromium del sistema en sus rutas estándar por plataforma.
+function findBrowser() {
+  const envPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envPath) {
+    if (!fs.existsSync(envPath)) fail(`PUPPETEER_EXECUTABLE_PATH does not exist: ${envPath}`);
+    return envPath;
+  }
+
+  const home = process.env.LOCALAPPDATA || "";
+  const candidates = {
+    win32: [
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      home && path.join(home, "Google\\Chrome\\Application\\chrome.exe"),
+      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+      "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    ],
+    darwin: [
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+      "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ],
+    linux: [
+      "/usr/bin/google-chrome-stable",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+      "/usr/bin/microsoft-edge",
+      "/snap/bin/chromium",
+    ],
+  }[process.platform] || [];
+
+  const found = candidates.filter(Boolean).find((p) => fs.existsSync(p));
+  if (found) return found;
+
+  return fail(
+    "PDF needs a Chromium-based browser and none was found.\n" +
+      "  - If you have Chrome/Edge/Chromium in a custom location: set PUPPETEER_EXECUTABLE_PATH to its executable.\n" +
+      "  - Otherwise install Google Chrome (or Microsoft Edge) and retry.\n" +
+      "  - No browser? Every other format works without one: --format md,html,docx",
+  );
+}
+
 function outPathFor(variant, doc, lang, ext) {
   if (outArg) return outArg.replace(/\.[^.]+$/, "") + `.${ext}`;
   const prefix = doc === "cover" ? "cover-letter" : "cv";
@@ -157,10 +203,10 @@ async function main() {
   let browser = null;
   let puppeteer = null;
   if (needsBrowser()) {
-    puppeteer = require("puppeteer");
+    puppeteer = require("puppeteer-core");
     browser = await puppeteer.launch({
       headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      executablePath: findBrowser(),
       args: (process.env.PUPPETEER_LAUNCH_ARGS || "").split(/\s+/).filter(Boolean),
     });
   }

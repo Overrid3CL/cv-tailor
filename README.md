@@ -57,8 +57,8 @@ Desktop/Code, Cursor, VS Code, Windsurf… any of them):
 to your data folder (under `npx` the working directory is unpredictable, so be explicit).
 No data yet? Copy the package's `examples/` folder as a starting point.
 
-> The PDF format uses Chromium (Puppeteer downloads it the first time, ~150 MB); the other
-> formats don't need it.
+> The PDF format uses the Chrome/Edge/Chromium you already have installed (nothing is
+> downloaded); the other formats don't need a browser at all.
 
 The intelligence comes from **the agent you already use** — the server never calls an LLM
 and needs no API key, and everything runs on your machine. Then you work in plain language;
@@ -85,8 +85,6 @@ Useful if you want to modify the tool, contribute, or run it without depending o
 git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
 npm install        # or: pnpm install · yarn · bun install
 ```
-
-> With **pnpm**: `pnpm approve-builds` for Puppeteer's postinstall.
 
 To connect your agent to the local clone, point the MCP config at the file instead of `npx`:
 
@@ -193,9 +191,9 @@ sqlite3 jobs.db "SELECT json_object('id', id, 'text', description) FROM jobs" \
 | `html` | No | Quick preview / publishing |
 | `md` | No | Plain text / version control |
 
-`--format` takes a list (`pdf,docx`) or `all`. To use an already-installed Chrome
-instead of the one Puppeteer downloads: install with `PUPPETEER_SKIP_DOWNLOAD=1` and set
-`PUPPETEER_EXECUTABLE_PATH` when generating (`PUPPETEER_LAUNCH_ARGS="--no-sandbox"` in
+`--format` takes a list (`pdf,docx`) or `all`. PDF finds your system's Chrome, Edge or
+Chromium automatically (nothing is downloaded); if yours lives in a custom location, set
+`PUPPETEER_EXECUTABLE_PATH` to its executable (`PUPPETEER_LAUNCH_ARGS="--no-sandbox"` in
 Docker/CI). Visual themes: `--template classic|modern` (CSS in `templates/`; adding a
 theme = one new file).
 
