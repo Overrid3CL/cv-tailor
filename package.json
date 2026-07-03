@@ -1,6 +1,6 @@
 {
   "name": "cv-tailor",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "mcpName": "io.github.overrid3cl/cv-tailor",
   "description": "Turn your AI agent into your job-application assistant: an MCP server (and CLI) that tailors your CV to each job posting, tracks applications and generates PDF/DOCX/HTML/Markdown — all local, no API keys.",
   "license": "MIT",
@@ -46,7 +46,7 @@
     "template.js",
     "mcp-server.js",
     "README.md",
-    "README.en.md",
+    "README.es.md",
     "LICENSE"
   ],
   "engines": {

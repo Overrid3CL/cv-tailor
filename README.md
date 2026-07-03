@@ -2,244 +2,244 @@
 
 <img src="docs/tailor.png" align="right" width="130" alt="cv-tailor">
 
-🌐 **Español** · [English](README.en.md)
+🌐 **English** · [Español](README.es.md)
 
-**Convierte a tu agente de IA en tu asistente de postulaciones.** Conectado por MCP, tu
-agente adapta tu CV a cada oferta, lo critica y mejora, genera el PDF/Word listo para
-enviar y lleva el seguimiento de cada postulación hasta la entrevista. **Todo corre en tu
-máquina: tus datos no se suben a ningún servidor.** Sin API keys ni servicios de pago —
-funciona con el agente que ya usas (Claude, Cursor, VS Code… cualquier cliente MCP).
+**Turn your AI agent into your job-application assistant.** Connected over MCP, your
+agent tailors your CV to each job posting, critiques and improves it, generates the
+ready-to-send PDF/Word and tracks every application through to the interview.
+**Everything runs on your machine: your data is never uploaded to any server.** No API
+keys, no paid services — it works with the agent you already use (Claude, Cursor,
+VS Code… any MCP client).
 
 <br clear="right">
 
-![Vista previa del CV de ejemplo](docs/preview.png)
+![Example CV preview](docs/preview.png)
 
-## ¿Qué problema resuelve?
+## What problem does it solve?
 
-Postular bien exige una versión del CV distinta por oferta, en el idioma correcto, en el
-formato que pida el proceso — y saber después qué versión le enviaste a quién. Hacer eso
-a mano con Word significa duplicar archivos y perder el control; hacerlo con un servicio
-web significa entregarle tu historial laboral a un tercero.
+Applying well requires a different CV version per posting, in the right language, in
+whatever format the process demands — and knowing afterwards which version you sent to
+whom. Doing that by hand in Word means duplicating files and losing control; doing it
+with a web service means handing your work history to a third party.
 
-Aquí en cambio:
+Here instead:
 
-- **Tu agente hace el trabajo**: le pides en lenguaje natural *"adapta mi CV a esta
-  oferta"*, *"critícalo"*, *"registra que postulé"*, *"prepárame la entrevista"* — y él
-  usa las herramientas del servidor MCP para hacerlo de verdad, con validación y
-  métricas, no solo con opinión.
-- **Todo es local y tuyo**: tus datos viven en archivos en tu carpeta (JSON legible,
-  editable a mano); el servidor MCP corre en tu máquina y no llama a ninguna API externa.
-- **Sin duplicar nada**: escribes tus datos una vez y cada postulación es una variante
-  chica con solo lo que cambia (headline, orden de skills, carta).
-- **Un comando genera todo**: PDF, Word, HTML y Markdown, en español, inglés o el idioma
-  que agregues — con o sin IA, también funciona como CLI a secas.
+- **Your agent does the work**: you ask in plain language — *"tailor my CV to this
+  posting"*, *"critique it"*, *"log that I applied"*, *"prep me for the interview"* —
+  and it uses the MCP server's tools to actually do it, with validation and metrics,
+  not just opinion.
+- **Everything is local and yours**: your data lives in files in your folder (readable
+  JSON, hand-editable); the MCP server runs on your machine and calls no external API.
+- **No duplication**: you write your data once, and each application is a small variant
+  with only what changes (headline, skill order, cover letter).
+- **One command generates everything**: PDF, Word, HTML and Markdown, in any language
+  you add — with or without AI, it also works as a plain CLI.
 
-## Empezar
+## Get started
 
-Necesitas [Node.js](https://nodejs.org) ≥ 18 (sirve npm, pnpm, yarn o [Bun](https://bun.sh)).
-Tienes tres formas de usarlo, de la más simple a la más manual.
+You need [Node.js](https://nodejs.org) ≥ 18 (npm, pnpm, yarn or [Bun](https://bun.sh)).
+There are three ways to use it, from the simplest to the most manual.
 
-### 1. Instálalo como servidor MCP — la forma recomendada (sin descargar el repo)
+### 1. Install it as an MCP server — the recommended way (no repo download)
 
-`cv-tailor` se publica en npm, así que tu cliente MCP lo lanza con `npx` sin que clones ni
-instales nada a mano. Agrega este bloque en la config de tu cliente (Claude Desktop/Code,
-Cursor, VS Code, Windsurf… cualquiera):
+`cv-tailor` is published on npm, so your MCP client launches it with `npx` without you
+cloning or installing anything by hand. Add this block to your client's config (Claude
+Desktop/Code, Cursor, VS Code, Windsurf… any of them):
 
 ```json
 { "mcpServers": { "cv-tailor": {
   "command": "npx", "args": ["-y", "cv-tailor-mcp"],
-  "env": { "CV_DIR": "/ruta/a/tu-carpeta-de-cv" }
+  "env": { "CV_DIR": "/path/to/your-cv-folder" }
 } } }
 ```
 
-`npx -y cv-tailor-mcp` descarga el servidor la primera vez y lo cachea. Define **`CV_DIR`**
-apuntando a tu carpeta de datos (bajo `npx` el directorio de trabajo es impredecible, así
-que conviene ser explícito). ¿No tienes datos aún? Copia la carpeta `examples/` del paquete
-como punto de partida.
+`npx -y cv-tailor-mcp` downloads the server the first time and caches it. Set **`CV_DIR`**
+to your data folder (under `npx` the working directory is unpredictable, so be explicit).
+No data yet? Copy the package's `examples/` folder as a starting point.
 
-> El formato PDF usa Chromium (Puppeteer lo descarga la primera vez, ~150 MB); los demás
-> formatos no lo necesitan.
+> The PDF format uses Chromium (Puppeteer downloads it the first time, ~150 MB); the other
+> formats don't need it.
 
-La inteligencia la pone **el agente que ya usas** — el servidor no llama a ningún LLM ni
-necesita API key, y todo corre en tu máquina. Luego trabajas en lenguaje natural; tu agente
-usa las herramientas del servidor de verdad (con validación y métricas), no solo con opinión:
+The intelligence comes from **the agent you already use** — the server never calls an LLM
+and needs no API key, and everything runs on your machine. Then you work in plain language;
+your agent uses the server's tools for real (with validation and metrics), not just opinion:
 
-| Le dices a tu agente… | Qué pasa |
+| You tell your agent… | What happens |
 |---|---|
-| *"Adapta mi CV a esta oferta"* (+ pegas la oferta) | Mide el match, elige tus logros relevantes, reescribe la variante **sin inventar experiencia** y verifica que el score mejoró |
-| *"¿Qué tan bien calzo con esta oferta?"* | Score 0–100 con las keywords que cubres y las que faltan |
-| *"Critica mi CV"* | Revisión medible + crítica de impacto con reescrituras propuestas |
-| *"Entrevístame para llenar mi banco de logros"* | Preguntas + guarda cada logro confirmado, con métrica |
-| *"Ya postulé a Acme, regístralo"* | Registra la postulación y **congela el PDF exacto que enviaste** |
-| *"¿Qué postulaciones tengo estancadas?"* | Revisa el registro y redacta los follow-ups |
-| *"Prepárame para la entrevista de Acme"* | Preguntas probables (incl. las incómodas sobre tus gaps) con qué logro responder |
-| *"Traduce mi CV al francés"* | Detecta lo que falta y lo completa, validado |
+| *"Tailor my CV to this posting"* (+ paste the posting) | Measures the match, picks your relevant achievements, rewrites the variant **without inventing experience** and verifies the score improved |
+| *"How well do I fit this posting?"* | 0–100 score with the keywords you cover and the ones you're missing |
+| *"Critique my CV"* | Measurable checks + impact critique with proposed rewrites |
+| *"Interview me to fill my achievements bank"* | Questions + stores each confirmed achievement, with its metric |
+| *"I applied to Acme, log it"* | Records the application and **freezes the exact PDF you sent** |
+| *"Which of my applications have stalled?"* | Reviews the log and drafts the follow-ups |
+| *"Prep me for the Acme interview"* | Likely questions (incl. the uncomfortable ones about your gaps) with which achievement to answer |
+| *"Translate my CV to French"* | Detects what's missing and completes it, validated |
 
-Ciclo completo: **oferta → CV adaptado → postulación registrada → seguimiento → entrevista**.
+Full cycle: **posting → tailored CV → logged application → follow-up → interview**.
 
-### 2. …o descarga el código
+### 2. …or download the code
 
-Útil si quieres modificar la herramienta, contribuir o correrla sin depender de npm:
+Useful if you want to modify the tool, contribute, or run it without depending on npm:
 
 ```bash
 git clone https://github.com/Overrid3CL/cv-tailor.git && cd cv-tailor
-npm install        # o: pnpm install · yarn · bun install
+npm install        # or: pnpm install · yarn · bun install
 ```
 
-> Con **pnpm**: `pnpm approve-builds` para el postinstall de Puppeteer.
+> With **pnpm**: `pnpm approve-builds` for Puppeteer's postinstall.
 
-Para conectar tu agente al clon local, apunta la config MCP al archivo en vez de a `npx`:
+To connect your agent to the local clone, point the MCP config at the file instead of `npx`:
 
 ```json
 { "mcpServers": { "cv-tailor": {
-  "command": "node", "args": ["/ruta/a/cv-tailor/mcp-server.js"],
-  "env": { "CV_DIR": "/ruta/a/tu-carpeta-de-cv" }
+  "command": "node", "args": ["/path/to/cv-tailor/mcp-server.js"],
+  "env": { "CV_DIR": "/path/to/your-cv-folder" }
 } } }
 ```
 
-(Claude Code lee el `.mcp.json` del repo automáticamente al abrirlo.)
+(Claude Code reads the repo's `.mcp.json` automatically when you open it.)
 
-### 3. …o úsalo por línea de comandos (sin IA)
+### 3. …or use it from the command line (no AI)
 
-Instalado global (`npm install -g cv-tailor`) tienes el comando `cv-tailor`; desde el clon,
-usa `node generate.js`:
+Installed globally (`npm install -g cv-tailor`) you get the `cv-tailor` command; from the
+clone, use `node generate.js`:
 
 ```bash
-# Instalado global: trabaja en tu carpeta de datos
-cd ~/mi-cv && cv-tailor --variant tailored
+# Installed globally: work in your data folder
+cd ~/my-cv && cv-tailor --variant tailored
 
-# Desde el clon: pruébalo ya con el CV de ejemplo (ficticio)
+# From the clone: try it now with the example CV (fictional)
 CV_DIR=examples node generate.js --variant tailored
 
-# Hazlo tuyo: copia el ejemplo a tu carpeta privada y edítalo
-cp -r examples ~/mi-cv && CV_DIR=~/mi-cv node generate.js --variant tailored
+# Make it yours: copy the example to your private folder and edit it
+cp -r examples ~/my-cv && CV_DIR=~/my-cv node generate.js --variant tailored
 ```
 
-El CV queda en `<carpeta>/output/tailored/` (PDF + Markdown). Sin IA también corren
-`match.js` (analizar una oferta) y `lint.js` (calidad del CV) — ver [Uso diario](#uso-diario-cli).
+The CV lands in `<folder>/output/tailored/` (PDF + Markdown). Also AI-free: `match.js`
+(analyze a posting) and `lint.js` (CV quality) — see [Daily use](#daily-use-cli).
 
-> Tus datos viven en **tu carpeta** (`CV_DIR`), nunca en el repo — por eso `base.json`,
-> `variants/`, `achievements.json` y `applications.json` de la raíz están en `.gitignore`.
-> `examples/` es una carpeta de datos lista para copiar.
+> Your data lives in **your folder** (`CV_DIR`), never in the repo — that's why the root
+> `base.json`, `variants/`, `achievements.json` and `applications.json` are in
+> `.gitignore`. `examples/` is a ready-to-copy data folder.
 
-## Cómo funciona
+## How it works
 
 ```
-base.json          ←  tu CV completo (datos, una sola vez)
-variants/          ←  un archivo por postulación, con SOLO lo que cambia
-achievements.json  ←  (opcional) banco de logros: materia prima para la IA
-applications.json  ←  (opcional) registro de postulaciones + snapshots
+base.json          ←  your full CV (data, written once)
+variants/          ←  one file per application, with ONLY what changes
+achievements.json  ←  (optional) achievements bank: raw material for the AI
+applications.json  ←  (optional) application log + snapshots
         │
         ▼
-node generate.js --variant <nombre> [--lang es|en|all] [--format pdf,docx,html,md]
+node generate.js --variant <name> [--lang es|en|all] [--format pdf,docx,html,md]
         │
         ▼
-output/<variante>/cv-... .pdf .docx .html .md   (+ carta de presentación)
+output/<variant>/cv-... .pdf .docx .html .md   (+ cover letter)
 ```
 
-Tres ideas clave:
+Three key ideas:
 
-1. **Datos ≠ código.** Todo lo tuyo está en JSON; la lógica de render no tiene contenido
-   personal. Los textos bilingües se escriben `{ "es": "...", "en": "..." }` y agregar un
-   idioma no requiere tocar código.
-2. **Las variantes heredan de `base.json`** y sobreescriben lo mínimo: qué experiencia
-   mostrar y en qué orden, headline, skills, carta. Nada se duplica.
-3. **Todo lo que se escribe se valida** (JSON Schema + chequeos de referencias): un JSON
-   inválido nunca llega a disco, lo edites tú o lo edite la IA.
+1. **Data ≠ code.** Everything of yours is JSON; the render logic contains no personal
+   content. Multilingual texts are written as `{ "es": "...", "en": "..." }` (or just
+   `{ "en": "..." }` — no language is mandatory) and adding a language requires no code.
+2. **Variants inherit from `base.json`** and override the minimum: which experience to
+   show and in what order, headline, skills, letter. Nothing is duplicated.
+3. **Every write is validated** (JSON Schema + reference checks): invalid JSON never
+   reaches disk, whether you edit it or the AI does.
 
-## Uso diario (CLI)
+## Daily use (CLI)
 
-Todos los comandos corren con `node` (o `bun`, si es lo tuyo — es indistinto):
+Every command runs with `node` (or `bun`, if that's your thing — both work):
 
 ```bash
-node generate.js --list                                  # ver variantes
-node generate.js --variant tailored --lang all           # todos los idiomas
-node generate.js --variant tailored --doc all            # CV + carta
+node generate.js --list                                  # list variants
+node generate.js --variant tailored --lang all           # every language
+node generate.js --variant tailored --doc all            # CV + cover letter
 node generate.js --variant tailored --format docx        # Word
-node generate.js --variant all --lang all                # todo de una vez
-node generate.js --variant tailored --template modern    # otro diseño
+node generate.js --variant all --lang all                # everything at once
+node generate.js --variant tailored --template modern    # another design
 
-node match.js --job oferta.txt --variant all   # ¿qué variante calza mejor con esta oferta?
-cat ofertas.jsonl | node match.js --jobs-stdin # score masivo: N ofertas → [{id, lang, score}] ordenado
-node lint.js --variant tailored                # revisión de calidad del CV (métricas, largos…)
-node import.js mi-resume.json                  # importar desde JSON Resume
-npm run validate                               # validar todos los datos
+node match.js --job posting.txt --variant all   # which variant fits this posting best?
+cat postings.jsonl | node match.js --jobs-stdin # mass scoring: N postings → sorted [{id, lang, score}]
+node lint.js --variant tailored                 # CV quality check (metrics, lengths…)
+node import.js my-resume.json                   # import from JSON Resume
+npm run validate                                # validate all the data
 ```
 
-`match.js` y `lint.js` son 100% deterministas (sin IA): puntúan la cobertura de keywords
-de una oferta y revisan buenas prácticas medibles.
+`match.js` and `lint.js` are 100% deterministic (no AI): they score a posting's keyword
+coverage and check measurable best practices.
 
-**Score masivo** (`--jobs-stdin`): para filtrar decenas o cientos de ofertas de una vez —
-por ejemplo exportadas desde una base de datos — se le pasa JSONL por stdin (una oferta
-por línea: `{"id": "job-1", "text": "..."}`) y devuelve solo `[{id, lang, score}]`
-ordenado por score, con el idioma autodetectado por oferta:
+**Mass scoring** (`--jobs-stdin`): to screen dozens or hundreds of postings at once — for
+example exported from a database — pipe JSONL through stdin (one posting per line:
+`{"id": "job-1", "text": "..."}`) and it returns only `[{id, lang, score}]` sorted by
+score, with the language auto-detected per posting:
 
 ```bash
-sqlite3 jobs.db "SELECT json_object('id', id, 'text', descripcion) FROM empleos" \
-  | CV_DIR=~/mi-cv node match.js --jobs-stdin > scores.json
+sqlite3 jobs.db "SELECT json_object('id', id, 'text', description) FROM jobs" \
+  | CV_DIR=~/my-cv node match.js --jobs-stdin > scores.json
 ```
 
 ---
 
-## Referencia
+## Reference
 
 <details>
-<summary><b>📄 Formatos y PDF</b></summary>
+<summary><b>📄 Formats and PDF</b></summary>
 
-| Formato | Necesita Chromium | Uso |
+| Format | Needs Chromium | Use |
 |---|---|---|
-| `pdf` | Sí | Entrega final (con saltos de página limpios y pie "página N de M" si hay 2+ páginas) |
-| `docx` | No | Procesos que piden Word |
-| `html` | No | Preview rápido / publicar |
-| `md` | No | Texto plano / control de versiones |
+| `pdf` | Yes | Final delivery (clean page breaks and a "page N of M" footer on 2+ pages) |
+| `docx` | No | Processes that ask for Word |
+| `html` | No | Quick preview / publishing |
+| `md` | No | Plain text / version control |
 
-`--format` acepta lista (`pdf,docx`) o `all`. Para usar un Chrome ya instalado en vez del
-que descarga Puppeteer: instala con `PUPPETEER_SKIP_DOWNLOAD=1` y define
-`PUPPETEER_EXECUTABLE_PATH` al generar (`PUPPETEER_LAUNCH_ARGS="--no-sandbox"` en
-Docker/CI). Temas visuales: `--template classic|modern` (CSS en `templates/`; agregar un
-tema = un archivo nuevo).
-
-</details>
-
-<details>
-<summary><b>🗂 Estructura de <code>base.json</code></b></summary>
-
-| Campo | Descripción |
-|---|---|
-| `name` / `contact` | Nombre y línea de contacto |
-| `labels` | Títulos de sección por idioma (las claves de `labels` definen los idiomas soportados; **la primera es el idioma pivote**, el de autoría) + `closing` opcional para la carta |
-| `dateTokens` | Traducción de tokens de fecha por idioma destino: `{ "en": { "Ene": "Jan", "Presente": "Present" } }` (las fechas se escriben en el idioma pivote) |
-| `links` | Links del encabezado: `[{ "label": "GitHub", "url": "…" }]` |
-| `experience[]` | `{ id, title, company, dates, bullets[] }` — cada texto `{es,en,…}` o string plano |
-| `education[]` / `languages[]` / `skills` | Educación, idiomas y skills (`{ clave: { label, value } }`) |
-| `custom_sections[]` | Secciones extra (proyectos, certificaciones…) con tres layouts: `entries` (como experiencia), `list` (viñetas) e `inline` (`label: value`) |
-| `stopwords` / `weak_starters` | Opcionales: amplían las listas embebidas (es/en) del match y del lint para otros idiomas o dominios |
-
-Un string traducible es un objeto por idioma (`{ "es": "…", "en": "…" }`, o `{ "en": "…" }`
-si tu CV es solo en inglés — **ningún idioma es obligatorio**); un string plano se usa
-igual en todos los idiomas. Para agregar un idioma: suma su clave a `labels` (y
-`dateTokens` si aplica) y agrégala en los textos — la CLI, el MCP y las fechas (`Intl`) lo
-reconocen solos. El prompt `translate_cv` puede completar las traducciones por ti.
+`--format` takes a list (`pdf,docx`) or `all`. To use an already-installed Chrome
+instead of the one Puppeteer downloads: install with `PUPPETEER_SKIP_DOWNLOAD=1` and set
+`PUPPETEER_EXECUTABLE_PATH` when generating (`PUPPETEER_LAUNCH_ARGS="--no-sandbox"` in
+Docker/CI). Visual themes: `--template classic|modern` (CSS in `templates/`; adding a
+theme = one new file).
 
 </details>
 
 <details>
-<summary><b>🧩 Variantes y cartas de presentación</b></summary>
+<summary><b>🗂 Structure of <code>base.json</code></b></summary>
 
-Crea `variants/<nombre>.json` con solo lo que cambia respecto de `base.json`:
-
-| Campo | Efecto |
+| Field | Description |
 |---|---|
-| `headline` / `summary` | Posicionamiento para ese rol |
-| `experience_ids` | Qué entradas mostrar y en qué orden |
-| `experience.<id>` | Sobreescribe campos de una entrada (o define una nueva) |
-| `skills_order` / `skills.<clave>` | Orden/filtro y overrides de skills |
-| `custom_sections.<id>` / `custom_sections_order` | Overrides y orden de secciones extra |
-| `links` / `education` / `languages` | Reemplazan el array completo |
-| `cover_letter` | Carta de presentación (abajo) |
+| `name` / `contact` | Name and contact line |
+| `labels` | Section titles per language (the keys of `labels` define the supported languages; **the first one is the pivot/authoring language**) + optional `closing` for the letter |
+| `dateTokens` | Date-token replacements per target language: `{ "en": { "Ene": "Jan", "Presente": "Present" } }` (dates are authored in the pivot language) |
+| `links` | Header links: `[{ "label": "GitHub", "url": "…" }]` |
+| `experience[]` | `{ id, title, company, dates, bullets[] }` — each text `{es,en,…}` or a plain string |
+| `education[]` / `languages[]` / `skills` | Education, languages and skills (`{ key: { label, value } }`) |
+| `custom_sections[]` | Extra sections (projects, certifications…) with three layouts: `entries` (like experience), `list` (bullets) and `inline` (`label: value`) |
+| `stopwords` / `weak_starters` | Optional: extend the built-in es/en lists used by the match and the lint, for other languages or domains |
 
-La carta solo exige `body` (párrafos); `recipient`, `company`, `subject` y `closing` son
-opcionales, y la fecha sale sola (localizada) si no la das:
+A translatable string is an object keyed by language (`{ "es": "…", "en": "…" }`, or just
+`{ "en": "…" }` for an English-only CV — **no language is mandatory**); a plain string is
+used as-is in every language. To add a language: add its key to `labels` (and to
+`dateTokens` if needed) and to the texts — the CLI, the MCP and the dates (`Intl`) pick
+it up automatically. The `translate_cv` prompt can fill in the translations for you.
+
+</details>
+
+<details>
+<summary><b>🧩 Variants and cover letters</b></summary>
+
+Create `variants/<name>.json` with only what changes relative to `base.json`:
+
+| Variant field | Effect |
+|---|---|
+| `headline` / `summary` | Positioning for that role |
+| `experience_ids` | Which entries to show, and in what order |
+| `experience.<id>` | Overrides fields of an entry (or defines a new one) |
+| `skills_order` / `skills.<key>` | Skill ordering/filtering and overrides |
+| `custom_sections.<id>` / `custom_sections_order` | Overrides and ordering of extra sections |
+| `links` / `education` / `languages` | Replace the whole array |
+| `cover_letter` | Cover letter (below) |
+
+The letter only requires `body` (paragraphs); `recipient`, `company`, `subject` and
+`closing` are optional, and the date is filled automatically (localized) if you omit it:
 
 ```json
 {
@@ -251,107 +251,106 @@ opcionales, y la fecha sale sola (localizada) si no la das:
 }
 ```
 
-Se genera con `--doc cover` o `--doc all`. Ejemplo completo en `examples/variants/tailored.json`.
+Generate with `--doc cover` or `--doc all`. Full example in `examples/variants/tailored.json`.
 
 </details>
 
 <details>
-<summary><b>🏆 Banco de logros y 📌 tracker de postulaciones</b></summary>
+<summary><b>🏆 Achievements bank and 📌 application tracker</b></summary>
 
-**`achievements.json`** (opcional): logros granulares con tags, skills, métrica y la
-experiencia de origen — más material del que cabe en un CV. La IA los usa como materia
-prima al adaptar variantes (`suggest_achievements` los rankea contra cada oferta) y el
-prompt `mine_achievements` lo llena entrevistándote. Ejemplo en
-`examples/achievements.json`.
+**`achievements.json`** (optional): granular achievements with tags, skills, the metric
+and the originating experience — more material than fits in a CV. The AI uses them as
+raw material when tailoring variants (`suggest_achievements` ranks them against each
+posting) and the `mine_achievements` prompt fills the bank by interviewing you. Example
+in `examples/achievements.json`.
 
-**`applications.json`** (opcional): registro de postulaciones — empresa, rol, fecha,
-variante enviada, score del match y estado (`sent` → `interview`/`offer`/`rejected`/
-`ghosted`). Al registrar con `log_application` se congela un snapshot en
-`applications/<id>/`: el **PDF exacto que enviaste**, la variante de ese momento y la
-oferta. Aunque edites tu CV después, siempre sabrás qué vio esa empresa.
+**`applications.json`** (optional): application log — company, role, date, variant sent,
+match score and status (`sent` → `interview`/`offer`/`rejected`/`ghosted`). Logging with
+`log_application` freezes a snapshot under `applications/<id>/`: the **exact PDF you
+sent**, the variant at that moment and the posting. Even if you edit your CV later, you
+will always know what that company saw.
 
-Ambos archivos viven en **tu carpeta de datos** (ver siguiente sección), son tuyos y se
-editan a mano si quieres. En este repo están en `.gitignore` por ser datos personales.
+Both files live in **your data folder** (see next section); they are yours and can be
+edited by hand. In this repo they are in `.gitignore` because they are personal data.
 
 </details>
 
 <details>
-<summary><b>📁 Dónde viven tus datos (instalación global / bunx)</b></summary>
+<summary><b>📁 Where your data lives (global install / bunx)</b></summary>
 
-El código (schemas, temas, scripts) viaja con el paquete; **tus datos no**. Los archivos
-(`base.json`, `variants/`, `achievements.json`, `applications.json`, `output/`) se buscan
-en el **directorio actual**, o en `CV_DIR` si lo defines:
+The code (schemas, themes, scripts) travels with the package; **your data does not**.
+The files (`base.json`, `variants/`, `achievements.json`, `applications.json`,
+`output/`) are resolved from the **current directory**, or from `CV_DIR` if you set it:
 
 ```bash
-cd ~/mi-cv && cv-tailor --variant tailored     # datos en ~/mi-cv
-CV_DIR=~/mi-cv cv-tailor --variant tailored    # desde cualquier lado
+cd ~/my-cv && cv-tailor --variant tailored     # data in ~/my-cv
+CV_DIR=~/my-cv cv-tailor --variant tailored    # from anywhere
 ```
 
-Para el binario global: `npm install -g cv-tailor` (o `npm link` / `bun link` dentro del
-clon). Corriendo desde el propio repo (`node generate.js …`), la carpeta de datos es la
-raíz del repo.
+For the global binary: `npm install -g cv-tailor` (or `npm link` / `bun link` inside the
+clone). Running from the repo itself (`node generate.js …`), the data
+folder is the repo root.
 
 </details>
 
 <details>
-<summary><b>🔌 Referencia MCP: tools, prompts y resources</b></summary>
+<summary><b>🔌 MCP reference: tools, prompts and resources</b></summary>
 
-**Tools** (todas deterministas; escritura siempre validada):
+**Tools** (all deterministic; every write validated):
 
-| Tool | Descripción |
+| Tool | Description |
 |---|---|
-| `get_base` / `update_base` / `update_base_section` | Leer y actualizar `base.json` |
-| `list_variants` / `get_variant` / `upsert_variant` / `delete_variant` | Gestionar variantes |
-| `import_json_resume` | Importar un CV en formato [JSON Resume](https://jsonresume.org) |
-| `validate` | Reporte de validación de todos los datos |
-| `generate_cv` | Generar documentos (`doc`, `lang`, `format`, `template`) |
-| `analyze_job_match` | Score oferta↔CV, keywords cubiertas/faltantes, ranking de variantes |
-| `analyze_jobs_batch` | Score masivo: N ofertas (archivo JSONL o inline) → solo `[{id, lang, score}]` ordenado — para filtrar antes de adaptar |
-| `list/upsert/delete_achievement` + `suggest_achievements` | Banco de logros + ranking por oferta |
-| `lint_cv` | Calidad medible del CV |
-| `find_missing_translations` | Campos sin un idioma, con ruta exacta |
-| `log/update/list/delete_application` | Tracker de postulaciones + snapshots |
+| `get_base` / `update_base` / `update_base_section` | Read and update `base.json` |
+| `list_variants` / `get_variant` / `upsert_variant` / `delete_variant` | Manage variants |
+| `import_json_resume` | Import a CV in [JSON Resume](https://jsonresume.org) format |
+| `validate` | Validation report for all the data |
+| `generate_cv` | Generate documents (`doc`, `lang`, `format`, `template`) |
+| `analyze_job_match` | Posting↔CV score, covered/missing keywords, variant ranking |
+| `analyze_jobs_batch` | Mass scoring: N postings (JSONL file or inline) → only sorted `[{id, lang, score}]` — to screen before tailoring |
+| `list/upsert/delete_achievement` + `suggest_achievements` | Achievements bank + per-posting ranking |
+| `lint_cv` | Measurable CV quality |
+| `find_missing_translations` | Fields missing a language, with exact paths |
+| `log/update/list/delete_application` | Application tracker + snapshots |
 
-**Prompts** (orquestan a tu agente paso a paso; la inteligencia la pone el agente/LLM
-que ya usas): `tailor_cv`, `review_cv`, `translate_cv`, `mine_achievements`,
-`interview_prep`, `follow_up_applications`. Las instrucciones internas están en inglés
-(estándar open source), pero cada prompt indica al agente **responderte en tu idioma**.
+**Prompts** (they orchestrate your agent step by step; the intelligence comes from the
+agent/LLM you already use): `tailor_cv`, `review_cv`, `translate_cv`,
+`mine_achievements`, `interview_prep`, `follow_up_applications`. Each prompt instructs
+the agent to **reply to you in your language**.
 
 **Resources**: `cv://base`, `cv://variants/<name>`, `cv://achievements`,
 `cv://applications`, `cv://schemas/base`, `cv://schemas/variant`.
 
-**Registrar el servidor** — es stdio estándar (`node /ruta/al/repo/mcp-server.js`), así
-que cualquier cliente MCP lo acepta con el bloque `mcpServers` mostrado arriba. Ejemplos:
-Claude Code: `claude mcp add cv-tailor -- node /ruta/al/repo/mcp-server.js` (con
-`--scope user` para todos los proyectos); Claude Desktop: agrega el bloque en
-`claude_desktop_config.json` y reinicia; Cursor/VS Code/Windsurf: el mismo bloque en la
-config MCP de cada uno. Define `CV_DIR` en el `env` del server si tus datos no están en
-el directorio de trabajo del cliente.
+**Registering the server** — it is standard stdio (`node /path/to/repo/mcp-server.js`),
+so any MCP client accepts the `mcpServers` block shown above. Examples: Claude Code:
+`claude mcp add cv-tailor -- node /path/to/repo/mcp-server.js` (add `--scope user`
+for all projects); Claude Desktop: add the block to `claude_desktop_config.json` and
+restart; Cursor/VS Code/Windsurf: the same block in each one's MCP config. Set `CV_DIR`
+in the server's `env` if your data is not in the client's working directory.
 
 </details>
 
 <details>
-<summary><b>🧪 Tests y validación</b></summary>
+<summary><b>🧪 Tests and validation</b></summary>
 
 ```bash
-npm run validate   # valida base.json y todas las variantes (funciona con node)
-bun test           # 100+ tests unitarios (el runner de tests de desarrollo es bun)
+npm run validate   # validates base.json and every variant (works with node)
+bun test           # 100+ unit tests (the development test runner is bun)
 ```
 
-Para **usar** la herramienta basta Node ≥ 18; Bun solo hace falta para correr los tests
-al desarrollar. CI verifica ambas rutas: bun (tests) y node+npm (instalación, validación
-y generación reales).
+To **use** the tool you only need Node ≥ 18; Bun is only required to run the tests while
+developing. CI checks both paths: bun (tests) and node+npm (real install, validation and
+generation).
 
-CI (GitHub Actions) corre ambos en cada push y pull request. Los datos tienen JSON Schema
-(`schemas/`) más chequeos semánticos: referencias que deben existir, entradas nuevas
-completas, ids únicos.
+CI (GitHub Actions) runs both on every push and pull request. The data has JSON Schema
+(`schemas/`) plus semantic checks: references must exist, new entries must be complete,
+ids must be unique.
 
 </details>
 
-## Contribuir
+## Contributing
 
-Ideas, issues y PRs bienvenidos — ver [CONTRIBUTING.md](CONTRIBUTING.md).
+Ideas, issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licencia
+## License
 
 [MIT](LICENSE)
