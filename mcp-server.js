@@ -29,7 +29,7 @@ const config = require("./lib/config");
 const { supportedLangs, t } = require("./template");
 const { themeNames, DEFAULT_THEME } = require("./templates");
 const { jsonResumeToBase, slugify } = require("./lib/jsonresume");
-const { matchJob, rankVariants, rankAchievements } = require("./lib/match");
+const { matchJob, matchJobsBatch, rankVariants, rankAchievements } = require("./lib/match");
 const { lintCV } = require("./lib/lint");
 const { findMissingTranslations } = require("./lib/i18n");
 
@@ -188,7 +188,7 @@ const TOOLS = [
   {
     name: "analyze_job_match",
     description:
-      "Analyzes a job posting against the CV (deterministic, no LLM): 0-100 weighted-coverage score, covered keywords (and where) and missing ones. With variant it evaluates that variant; without it, it evaluates the base and also ranks every variant. Use it BEFORE tailoring the CV to a posting and AFTER to verify the improvement.",
+      "Analyzes a job posting against the CV (deterministic, no LLM): 0-100 weighted-coverage score, covered keywords (and where) and missing ones. With variant it evaluates that variant; without it, it evaluates the base and also ranks every variant. Use it BEFORE tailoring the CV to a posting and AFTER to verify the improvement. To score MANY postings at once (screening), use analyze_jobs_batch instead.",
     inputSchema: {
       type: "object",
       required: ["job"],
@@ -197,6 +197,35 @@ const TOOLS = [
         job: { type: "string", description: "Full job posting text." },
         variant: { type: "string", description: "Variant to evaluate (omit to evaluate the base and rank all)." },
         lang: { type: "string", enum: SUPPORTED_LANGS, description: "CV language to evaluate. Omit to auto-detect from the posting's language (recommended): an English posting is matched against the English CV. The report includes the language used." },
+      },
+    },
+  },
+  {
+    name: "analyze_jobs_batch",
+    description:
+      "Scores MANY job postings against the base CV in one call (deterministic, no LLM) and returns ONLY [{id, lang, score}] sorted by score descending — no keyword detail. Use it to screen a large batch (tens or hundreds of postings) BEFORE tailoring: shortlist the top ids, then call analyze_job_match on each shortlisted posting for full keyword detail. RECOMMENDED FLOW for large batches: write the postings to a JSONL file in the data folder (one {\"id\", \"text\"} object per line — e.g. export them from a database with one shell command) and pass its path via `file`; the texts are read from disk and never enter the conversation. Use `jobs` inline only for a handful of postings. The language of each posting is auto-detected.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        file: {
+          type: "string",
+          description: "Path to a JSONL file: one {\"id\": ..., \"text\": \"...\"} per line. Relative paths resolve against the data folder (CV_DIR). Preferred for large batches — texts never enter your context.",
+        },
+        jobs: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "text"],
+            additionalProperties: true,
+            properties: {
+              id: { type: "string", description: "Your identifier for the posting (returned as-is)." },
+              text: { type: "string", description: "Full job posting text." },
+            },
+          },
+          description: "Inline postings — only for small batches (a handful). For large batches use file.",
+        },
+        top: { type: "number", description: "Return only the N best scores (default: all)." },
       },
     },
   },
@@ -563,6 +592,37 @@ async function handleTool(name, args) {
         base: matchJob(args.job, base, {}, lang),
         ranking: rankVariants(args.job, base, variantsMap, lang),
       });
+    }
+
+    case "analyze_jobs_batch": {
+      if (!args.file && !args.jobs) throw new Error("Provide file (JSONL path) or jobs (array of {id, text}).");
+      if (args.file && args.jobs) throw new Error("Provide file OR jobs, not both.");
+      let jobs;
+      if (args.file) {
+        const p = path.resolve(config.DATA_DIR, args.file);
+        if (!fs.existsSync(p)) throw new Error(`File not found: ${p}`);
+        jobs = fs
+          .readFileSync(p, "utf-8")
+          .split("\n")
+          .filter((l) => l.trim())
+          .map((line, i) => {
+            try {
+              return JSON.parse(line);
+            } catch {
+              throw new Error(`Invalid JSON at line ${i + 1} of ${args.file}: ${line.slice(0, 80)}`);
+            }
+          });
+      } else {
+        jobs = args.jobs;
+      }
+      if (!jobs.length) throw new Error("No jobs to score.");
+      jobs.forEach((j, i) => {
+        if (!j || typeof j.text !== "string" || !j.text.trim()) {
+          throw new Error(`Job ${i + 1}: each entry needs a non-empty "text" (and an "id" to recognize it).`);
+        }
+      });
+      const results = matchJobsBatch(jobs, store.readBase());
+      return json(args.top ? results.slice(0, args.top) : results);
     }
 
     case "list_achievements": {

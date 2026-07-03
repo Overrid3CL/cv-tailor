@@ -6,16 +6,25 @@
 //   node match.js --job oferta.txt --variant tailored
 //   node match.js --job oferta.txt --variant all    # rankea todas las variants
 //   node match.js --job oferta.txt --lang en       # forzar idioma del CV
+//   cat ofertas.jsonl | node match.js --jobs-stdin # score masivo (ver abajo)
 //
 // Sin --lang, el idioma del CV a evaluar se detecta del texto de la oferta
 // (una oferta en inglés se compara contra la versión en inglés del CV).
+//
+// --jobs-stdin: score masivo contra el CV base. Lee JSONL por stdin (una
+// oferta por línea: {"id": "job-1", "text": "..."}) y emite un array JSON
+// [{id, lang, score}] ordenado por score descendente — solo el número, para
+// filtrar cientos de ofertas antes de trabajar el detalle. Ejemplo desde una
+// base de datos:
+//   sqlite3 jobs.db "SELECT json_object('id', id, 'text', descripcion) FROM empleos" \
+//     | CV_DIR=~/mi-cv node match.js --jobs-stdin > scores.json
 //
 // 100% determinista (sin LLM): keywords por frecuencia/siglas/skills del CV y
 // score de cobertura ponderada. Ver lib/match.js.
 
 const fs = require("fs");
 const path = require("path");
-const { matchJob, rankVariants, detectLang } = require("./lib/match");
+const { matchJob, matchJobsBatch, rankVariants, detectLang } = require("./lib/match");
 const { supportedLangs } = require("./template");
 const { validateBase } = require("./lib/validate");
 const config = require("./lib/config");
@@ -32,12 +41,16 @@ function fail(msg) {
   process.exit(1);
 }
 
+const jobsStdin = args.includes("--jobs-stdin");
 const jobPath = flag("--job");
-if (!jobPath) {
-  fail("Usage: node match.js --job <oferta.txt> [--variant <name|all>] [--lang <lang>]");
+if (!jobPath && !jobsStdin) {
+  fail(
+    "Usage: node match.js --job <oferta.txt> [--variant <name|all>] [--lang <lang>]\n" +
+      '       <export JSONL> | node match.js --jobs-stdin   # una oferta por línea: {"id": ..., "text": "..."}',
+  );
 }
-if (!fs.existsSync(jobPath)) fail(`File not found: ${jobPath}`);
-const jobText = fs.readFileSync(jobPath, "utf-8");
+if (jobPath && !fs.existsSync(jobPath)) fail(`File not found: ${jobPath}`);
+const jobText = jobPath ? fs.readFileSync(jobPath, "utf-8") : "";
 
 if (!fs.existsSync(config.basePath())) {
   fail(`base.json not found in ${config.DATA_DIR}.\nCopy examples/base.json there, or set CV_DIR to your CV data folder.`);
@@ -45,6 +58,29 @@ if (!fs.existsSync(config.basePath())) {
 const base = config.loadBase();
 const baseCheck = validateBase(base);
 if (!baseCheck.valid) fail(`Validation failed (base.json):\n  - ${baseCheck.errors.join("\n  - ")}`);
+
+// --jobs-stdin: score masivo contra el base y salida JSON — termina aquí.
+if (jobsStdin) {
+  const input = fs.readFileSync(0, "utf-8");
+  const jobs = input
+    .split("\n")
+    .filter((l) => l.trim())
+    .map((line, i) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return fail(`Invalid JSON on stdin line ${i + 1}: ${line.slice(0, 80)}`);
+      }
+    });
+  if (!jobs.length) fail("No jobs on stdin. Expected JSONL: one {\"id\": ..., \"text\": \"...\"} per line.");
+  jobs.forEach((j, i) => {
+    if (!j || typeof j.text !== "string" || !j.text.trim()) {
+      fail(`stdin line ${i + 1}: each job needs a non-empty "text" (and an "id" to recognize it).`);
+    }
+  });
+  console.log(JSON.stringify(matchJobsBatch(jobs, base), null, 2));
+  process.exit(0);
+}
 
 const langFlag = flag("--lang");
 if (langFlag && !supportedLangs(base).includes(langFlag)) {

@@ -1,6 +1,6 @@
 // test/match.test.js — análisis determinista oferta vs CV (lib/match.js)
 const { describe, test, expect } = require("bun:test");
-const { normalize, tokenize, detectLang, extractKeywords, cvCorpus, matchJob, rankVariants } = require("../lib/match");
+const { normalize, tokenize, detectLang, extractKeywords, cvCorpus, matchJob, matchJobsBatch, rankVariants } = require("../lib/match");
 
 const fixtureBase = () => ({
   name: "Jane Doe",
@@ -151,6 +151,34 @@ describe("detectLang", () => {
 
   test("respeta los idiomas candidatos", () => {
     expect(detectLang(JOB_EN, ["es"])).toBe(null); // "en" no es candidato
+  });
+});
+
+describe("matchJobsBatch", () => {
+  test("scorea varias ofertas y ordena por score descendente, solo el número", () => {
+    const jobs = [
+      { id: "afin-es", text: JOB_ES },
+      { id: "afin-en", text: JOB_EN },
+      { id: "ajena", text: "Buscamos chef de cocina para restaurante. Cocina francesa. Cocina de autor y repostería. Chef con experiencia en cocina." },
+    ];
+    const results = matchJobsBatch(jobs, fixtureBase());
+    expect(results.length).toBe(3);
+    // Ordenado: las ofertas afines primero, la ajena al final
+    expect(results[results.length - 1].id).toBe("ajena");
+    expect(results[0].score).toBeGreaterThanOrEqual(results[1].score);
+    expect(results[1].score).toBeGreaterThanOrEqual(results[2].score);
+    // Solo id, lang y score — sin detalle de keywords
+    expect(Object.keys(results[0]).sort()).toEqual(["id", "lang", "score"]);
+  });
+
+  test("detecta el idioma por oferta dentro del mismo lote", () => {
+    const results = matchJobsBatch(
+      [{ id: "es", text: JOB_ES }, { id: "en", text: JOB_EN }],
+      fixtureBase(),
+    );
+    const byId = Object.fromEntries(results.map((r) => [r.id, r]));
+    expect(byId.es.lang).toBe("es");
+    expect(byId.en.lang).toBe("en");
   });
 });
 

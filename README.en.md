@@ -160,6 +160,7 @@ node generate.js --variant all --lang all                # everything at once
 node generate.js --variant tailored --template modern    # another design
 
 node match.js --job posting.txt --variant all   # which variant fits this posting best?
+cat postings.jsonl | node match.js --jobs-stdin # mass scoring: N postings → sorted [{id, lang, score}]
 node lint.js --variant tailored                 # CV quality check (metrics, lengths…)
 node import.js my-resume.json                   # import from JSON Resume
 npm run validate                                # validate all the data
@@ -167,6 +168,16 @@ npm run validate                                # validate all the data
 
 `match.js` and `lint.js` are 100% deterministic (no AI): they score a posting's keyword
 coverage and check measurable best practices.
+
+**Mass scoring** (`--jobs-stdin`): to screen dozens or hundreds of postings at once — for
+example exported from a database — pipe JSONL through stdin (one posting per line:
+`{"id": "job-1", "text": "..."}`) and it returns only `[{id, lang, score}]` sorted by
+score, with the language auto-detected per posting:
+
+```bash
+sqlite3 jobs.db "SELECT json_object('id', id, 'text', description) FROM jobs" \
+  | CV_DIR=~/my-cv node match.js --jobs-stdin > scores.json
+```
 
 ---
 
@@ -295,6 +306,7 @@ folder is the repo root.
 | `validate` | Validation report for all the data |
 | `generate_cv` | Generate documents (`doc`, `lang`, `format`, `template`) |
 | `analyze_job_match` | Posting↔CV score, covered/missing keywords, variant ranking |
+| `analyze_jobs_batch` | Mass scoring: N postings (JSONL file or inline) → only sorted `[{id, lang, score}]` — to screen before tailoring |
 | `list/upsert/delete_achievement` + `suggest_achievements` | Achievements bank + per-posting ranking |
 | `lint_cv` | Measurable CV quality |
 | `find_missing_translations` | Fields missing a language, with exact paths |

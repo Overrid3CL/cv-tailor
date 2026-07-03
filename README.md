@@ -160,6 +160,7 @@ node generate.js --variant all --lang all                # todo de una vez
 node generate.js --variant tailored --template modern    # otro diseño
 
 node match.js --job oferta.txt --variant all   # ¿qué variante calza mejor con esta oferta?
+cat ofertas.jsonl | node match.js --jobs-stdin # score masivo: N ofertas → [{id, lang, score}] ordenado
 node lint.js --variant tailored                # revisión de calidad del CV (métricas, largos…)
 node import.js mi-resume.json                  # importar desde JSON Resume
 npm run validate                               # validar todos los datos
@@ -167,6 +168,16 @@ npm run validate                               # validar todos los datos
 
 `match.js` y `lint.js` son 100% deterministas (sin IA): puntúan la cobertura de keywords
 de una oferta y revisan buenas prácticas medibles.
+
+**Score masivo** (`--jobs-stdin`): para filtrar decenas o cientos de ofertas de una vez —
+por ejemplo exportadas desde una base de datos — se le pasa JSONL por stdin (una oferta
+por línea: `{"id": "job-1", "text": "..."}`) y devuelve solo `[{id, lang, score}]`
+ordenado por score, con el idioma autodetectado por oferta:
+
+```bash
+sqlite3 jobs.db "SELECT json_object('id', id, 'text', descripcion) FROM empleos" \
+  | CV_DIR=~/mi-cv node match.js --jobs-stdin > scores.json
+```
 
 ---
 
@@ -295,6 +306,7 @@ raíz del repo.
 | `validate` | Reporte de validación de todos los datos |
 | `generate_cv` | Generar documentos (`doc`, `lang`, `format`, `template`) |
 | `analyze_job_match` | Score oferta↔CV, keywords cubiertas/faltantes, ranking de variantes |
+| `analyze_jobs_batch` | Score masivo: N ofertas (archivo JSONL o inline) → solo `[{id, lang, score}]` ordenado — para filtrar antes de adaptar |
 | `list/upsert/delete_achievement` + `suggest_achievements` | Banco de logros + ranking por oferta |
 | `lint_cv` | Calidad medible del CV |
 | `find_missing_translations` | Campos sin un idioma, con ruta exacta |
