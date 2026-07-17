@@ -47,12 +47,14 @@ Cursor, VS Code, Windsurf… cualquiera):
 
 ```json
 { "mcpServers": { "cv-tailor": {
-  "command": "npx", "args": ["-y", "cv-tailor-mcp"],
+  "command": "npx", "args": ["-y", "-p", "cv-tailor", "cv-tailor-mcp"],
   "env": { "CV_DIR": "/ruta/a/tu-carpeta-de-cv" }
 } } }
 ```
 
-`npx -y cv-tailor-mcp` descarga el servidor la primera vez y lo cachea. Define **`CV_DIR`**
+`npx -y -p cv-tailor cv-tailor-mcp` descarga el servidor la primera vez y lo cachea. El
+`-p cv-tailor` le indica a npx en qué paquete vive el comando `cv-tailor-mcp`; sin eso npx
+busca un paquete llamado literalmente `cv-tailor-mcp` y falla con un 404. Define **`CV_DIR`**
 apuntando a tu carpeta de datos (bajo `npx` el directorio de trabajo es impredecible, así
 que conviene ser explícito). ¿No tienes datos aún? Copia la carpeta `examples/` del paquete
 como punto de partida.
