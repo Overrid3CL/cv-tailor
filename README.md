@@ -48,12 +48,14 @@ Desktop/Code, Cursor, VS Code, Windsurf… any of them):
 
 ```json
 { "mcpServers": { "cv-tailor": {
-  "command": "npx", "args": ["-y", "cv-tailor-mcp"],
+  "command": "npx", "args": ["-y", "-p", "cv-tailor", "cv-tailor-mcp"],
   "env": { "CV_DIR": "/path/to/your-cv-folder" }
 } } }
 ```
 
-`npx -y cv-tailor-mcp` downloads the server the first time and caches it. Set **`CV_DIR`**
+`npx -y -p cv-tailor cv-tailor-mcp` downloads the server the first time and caches it. The
+`-p cv-tailor` tells npx which package the `cv-tailor-mcp` command lives in — without it npx
+looks for a package literally named `cv-tailor-mcp` and fails with a 404. Set **`CV_DIR`**
 to your data folder (under `npx` the working directory is unpredictable, so be explicit).
 No data yet? Copy the package's `examples/` folder as a starting point.
 
